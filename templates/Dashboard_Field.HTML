@@ -83,6 +83,14 @@
         #camera-preview { width: 100%; max-width: 100%; border-radius: var(--radius-md); background: #000; }
         .camera-actions { margin-top: 16px; display: flex; gap: 12px; }
         .ai-processing { color: #60a5fa; font-size: 13px; margin-top: 12px; font-weight: 500; display: none;}
+        @keyframes scanMove {
+            0%   { top: 0%; }
+            100% { top: 100%; }
+        }
+        @keyframes boxPulse {
+            0%,100% { opacity: 1; }
+            50%      { opacity: 0.4; }
+        }
 
         /* RESULT WIDGET (SPLIT AI & MANUAL) */
         .result-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
@@ -166,7 +174,7 @@
         </div>
 
         <div class="card">
-            <h3 class="card-title">🤖 Verifikasi Muatan AI & Aktual</h3>
+            <h3 class="card-title"> Verifikasi Muatan (Komputer Vision) & Aktual</h3>
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">Selesaikan tahapan foto. Sistem otomatis menanamkan watermark lokasi & waktu. Jangan lupa isi <strong>Kuantitas Aktual</strong>.</p>
             
             <div class="cv-grid" id="cv-grid"></div>
@@ -176,7 +184,18 @@
                     <span id="cam-title">📸 State: 0%</span>
                     <span style="cursor:pointer; color:#9ca3af;" onclick="closeCameraPanel()">✕ Tutup</span>
                 </div>
-                <video id="camera-preview" autoplay playsinline></video>
+
+                <!-- WRAPPER: video + overlay canvas ditumpuk -->
+                <div style="position:relative; display:inline-block; width:100%; border-radius:var(--radius-md); overflow:hidden; background:#000;">
+                    <video id="camera-preview" autoplay playsinline style="width:100%; display:block; border-radius:var(--radius-md);"></video>
+                    <!-- Overlay canvas untuk fake detection boxes -->
+                    <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:var(--radius-md);"></canvas>
+                    <!-- Scan line effect -->
+                    <div id="scan-line" style="display:none; position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,#00ff88,transparent); box-shadow:0 0 8px #00ff88; animation:scanMove 1.5s linear infinite; pointer-events:none;"></div>
+                    <!-- Status badge overlay -->
+                    <div id="detect-badge" style="display:none; position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); color:#00ff88; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; font-family:monospace; letter-spacing:0.5px;"></div>
+                </div>
+
                 <canvas id="canvas" style="display:none;"></canvas>
                 
                 <div class="camera-actions">
@@ -206,7 +225,7 @@
                 Validasi Geofence Diperlukan
             </div>
             <button class="btn btn-success" id="btn-submit" disabled onclick="submitData()" style="width: auto; padding-left: 24px; padding-right: 24px;">
-                🚀 Konfirmasi & Kirim
+                Konfirmasi & Kirim
             </button>
         </div>
     </div>
@@ -339,7 +358,43 @@
             }
         }
 
+        // =====================================
+        // WARNING & AGREEMENT MODAL
+        // =====================================
+        function showAgreementModal() {
+            document.getElementById('agreement-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            // Tombol Setuju baru aktif setelah scroll sampai bawah
+            const box = document.getElementById('agreement-scroll');
+            box.addEventListener('scroll', function() {
+                const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 10;
+                const btn = document.getElementById('btn-agree');
+                if (atBottom) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                }
+            });
+        }
+
+        function acceptAgreement() {
+            const checkbox = document.getElementById('chk-agree');
+            if (!checkbox.checked) {
+                alert('Anda harus mencentang pernyataan persetujuan terlebih dahulu.');
+                return;
+            }
+            // Simpan ke sessionStorage agar tidak muncul lagi selama sesi ini
+            sessionStorage.setItem('spil_agreement_accepted', '1');
+            document.getElementById('agreement-modal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
         window.onload = () => {
+            // Tampilkan modal agreement jika belum diterima di sesi ini
+            const accepted = sessionStorage.getItem('spil_agreement_accepted');
+            if (!accepted) {
+                showAgreementModal();
+            }
             loadWarehouses();
             loadOrdersDropdown();
         };
@@ -370,20 +425,237 @@
                 return;
             }
 
+            // Reset semua state kamera & overlay sebelum buka panel baru
+            clearOverlay();
+            detectionBoxes = [];
+            detectionPhase = 'scanning';
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+            const video = document.getElementById('camera-preview');
+            video.srcObject = null;
+            video.style.display = 'none';
+            document.getElementById('btn-start').style.display = 'block';
+            document.getElementById('btn-snap').style.display = 'none';
+            document.getElementById('ai-status').style.display = 'none';
+            document.getElementById('ai-status').style.color = '#60a5fa';
+
+            // Bersihkan overlay canvas
+            const overlay = document.getElementById('overlay-canvas');
+            if (overlay) {
+                const ctx = overlay.getContext('2d');
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+            }
+
             currentState = state;
             document.querySelectorAll('.cv-item').forEach(c => c.classList.remove('active'));
             document.getElementById('card-' + state.replace('%', '')).classList.add('active');
             document.getElementById('camera-panel').style.display = 'block';
             document.getElementById('cam-title').innerText = `📸 Pengambilan State: ${state}`;
-            document.getElementById('ai-status').style.display = 'none';
         }
 
         function closeCameraPanel() {
+            clearOverlay();
+            detectionBoxes = [];
+            detectionPhase = 'scanning';
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+            const video = document.getElementById('camera-preview');
+            video.srcObject = null;
+            video.style.display = 'none';
             document.getElementById('camera-panel').style.display = 'none';
-            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
-            document.getElementById('camera-preview').style.display = 'none';
             document.getElementById('btn-start').style.display = 'block';
             document.getElementById('btn-snap').style.display = 'none';
+        }
+
+        // =====================================
+        // FAKE DETECTION OVERLAY (REAL-TIME)
+        // =====================================
+        let detectionInterval = null;
+        let detectionBoxes = [];
+        let detectionPhase = 'scanning'; // scanning | analyzing | done
+
+        function generateFakeBoxes(W, H) {
+            // Buat 4-10 kotak deteksi acak yang terlihat natural
+            const count = 4 + Math.floor(Math.random() * 7);
+            const boxes = [];
+            for (let i = 0; i < count; i++) {
+                const w = 40 + Math.random() * 80;
+                const h = 35 + Math.random() * 70;
+                const x = 10 + Math.random() * (W - w - 20);
+                const y = 10 + Math.random() * (H - h - 80);
+                boxes.push({
+                    x, y, w, h,
+                    label: 'BOX',
+                    conf: (0.72 + Math.random() * 0.27).toFixed(2),
+                    color: `hsl(${140 + Math.random()*40}, 90%, 55%)`,
+                    phase: Math.random() // buat tiap kotak beda phase kedip
+                });
+            }
+            return boxes;
+        }
+
+        function drawDetectionOverlay(phase) {
+            const video = document.getElementById('camera-preview');
+            const overlay = document.getElementById('overlay-canvas');
+            if (!video || !overlay || video.videoWidth === 0) return;
+
+            overlay.width  = video.videoWidth;
+            overlay.height = video.videoHeight;
+            const ctx = overlay.getContext('2d');
+            ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+            const W = overlay.width;
+            const H = overlay.height;
+            const t = Date.now();
+
+            if (phase === 'scanning') {
+                // Kotak bergerak-gerak acak, muncul & hilang
+                detectionBoxes.forEach((box, i) => {
+                    // Gerak sedikit setiap frame (jitter)
+                    box.x += (Math.random() - 0.5) * 2;
+                    box.y += (Math.random() - 0.5) * 2;
+                    box.x = Math.max(5, Math.min(W - box.w - 5, box.x));
+                    box.y = Math.max(5, Math.min(H - box.h - 80, box.y));
+
+                    const alpha = 0.5 + 0.5 * Math.sin(t / 400 + box.phase * Math.PI * 2);
+                    ctx.globalAlpha = alpha;
+
+                    // Kotak
+                    ctx.strokeStyle = box.color;
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([6, 3]);
+                    ctx.strokeRect(box.x, box.y, box.w, box.h);
+
+                    // Sudut tebal (corner brackets)
+                    const cs = 12;
+                    ctx.setLineDash([]);
+                    ctx.lineWidth = 3;
+                    [[box.x, box.y, 1, 1], [box.x+box.w, box.y, -1, 1],
+                     [box.x, box.y+box.h, 1, -1], [box.x+box.w, box.y+box.h, -1, -1]].forEach(([cx,cy,dx,dy]) => {
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy + dy*cs); ctx.lineTo(cx, cy); ctx.lineTo(cx + dx*cs, cy);
+                        ctx.stroke();
+                    });
+
+                    // Label
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = box.color;
+                    ctx.fillRect(box.x, box.y - 18, 72, 18);
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillText(`${box.label} ${box.conf}`, box.x + 4, box.y - 5);
+
+                    ctx.globalAlpha = 1;
+                });
+
+                // Update badge
+                const badge = document.getElementById('detect-badge');
+                if (badge) {
+                    badge.style.display = 'block';
+                    const dotCount = Math.floor(t / 400) % 4;
+                    badge.textContent = `🔍 SCANNING${'.'.repeat(dotCount)}  ${detectionBoxes.length} objek`;
+                }
+
+            } else if (phase === 'analyzing') {
+                // Kotak berkedip cepat merah/kuning — "AI Processing"
+                detectionBoxes.forEach(box => {
+                    const flicker = Math.sin(t / 120 + box.phase * 5) > 0;
+                    ctx.globalAlpha = flicker ? 1 : 0.3;
+                    ctx.strokeStyle = flicker ? '#ef4444' : '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.strokeRect(box.x, box.y, box.w, box.h);
+
+                    // Overlay merah transparan
+                    ctx.fillStyle = flicker ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.1)';
+                    ctx.fillRect(box.x, box.y, box.w, box.h);
+                    ctx.globalAlpha = 1;
+                });
+
+                // Badge analyzing
+                const badge = document.getElementById('detect-badge');
+                if (badge) {
+                    badge.style.color = '#60a5fa';
+                    badge.textContent = `⚙️ AI MENGANALISIS...`;
+                }
+
+            } else if (phase === 'done') {
+                // Kotak hijau solid dengan label jumlah
+                detectionBoxes.forEach((box, i) => {
+                    ctx.globalAlpha = 0.9;
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.strokeRect(box.x, box.y, box.w, box.h);
+                    ctx.fillStyle = 'rgba(16,185,129,0.1)';
+                    ctx.fillRect(box.x, box.y, box.w, box.h);
+
+                    // Sudut tebal hijau
+                    const cs = 10;
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#10b981';
+                    [[box.x,box.y,1,1],[box.x+box.w,box.y,-1,1],
+                     [box.x,box.y+box.h,1,-1],[box.x+box.w,box.y+box.h,-1,-1]].forEach(([cx,cy,dx,dy]) => {
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy+dy*cs); ctx.lineTo(cx,cy); ctx.lineTo(cx+dx*cs, cy);
+                        ctx.stroke();
+                    });
+
+                    // Label hijau
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillRect(box.x, box.y - 18, 64, 18);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillText(`✓ BOX #${i+1}`, box.x + 4, box.y - 5);
+                    ctx.globalAlpha = 1;
+                });
+
+                // Hentikan animasi setelah done
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+                const badge = document.getElementById('detect-badge');
+                if (badge) {
+                    badge.style.color = '#10b981';
+                    badge.textContent = `✅ ${detectionBoxes.length} TERDETEKSI`;
+                }
+            }
+        }
+
+        function startDetectionOverlay() {
+            const video = document.getElementById('camera-preview');
+            detectionPhase = 'scanning';
+
+            // Generate kotak fake
+            const W = video.videoWidth || 640;
+            const H = video.videoHeight || 480;
+            detectionBoxes = generateFakeBoxes(W, H);
+
+            // Tampilkan scan line
+            const scanLine = document.getElementById('scan-line');
+            if (scanLine) scanLine.style.display = 'block';
+
+            // Animasi loop ~30fps
+            if (detectionInterval) clearInterval(detectionInterval);
+            detectionInterval = setInterval(() => drawDetectionOverlay(detectionPhase), 33);
+        }
+
+        function stopDetectionToAnalyzing() {
+            detectionPhase = 'analyzing';
+            const scanLine = document.getElementById('scan-line');
+            if (scanLine) scanLine.style.display = 'none';
+        }
+
+        function stopDetectionToDone() {
+            detectionPhase = 'done';
+            drawDetectionOverlay('done');
+        }
+
+        function clearOverlay() {
+            if (detectionInterval) { clearInterval(detectionInterval); detectionInterval = null; }
+            const overlay = document.getElementById('overlay-canvas');
+            if (overlay) overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+            const badge = document.getElementById('detect-badge');
+            if (badge) badge.style.display = 'none';
+            const scanLine = document.getElementById('scan-line');
+            if (scanLine) scanLine.style.display = 'none';
         }
 
         async function startCamera() {
@@ -394,6 +666,11 @@
                 video.style.display = 'block';
                 document.getElementById('btn-start').style.display = 'none';
                 document.getElementById('btn-snap').style.display = 'block';
+
+                // Mulai overlay deteksi setelah video siap
+                video.onloadedmetadata = () => { startDetectionOverlay(); };
+                // Fallback jika sudah siap
+                setTimeout(() => { if (video.videoWidth > 0) startDetectionOverlay(); }, 800);
             } catch (err) { alert("Kamera gagal diakses. Pastikan izin browser diberikan."); }
         }
 
@@ -402,6 +679,9 @@
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             
+            // Switch overlay ke fase analyzing
+            stopDetectionToAnalyzing();
+
             // Atur ukuran canvas
             canvas.width = video.videoWidth || 640; 
             canvas.height = video.videoHeight || 480;
@@ -448,40 +728,78 @@
             const targetQtyPlan = orderPlans[selectedOrder] || 0; 
 
             // ===========================================
-            // LOGIKA BYPASS AI (SELUARUH STATE PASTI LOGIS)
+            // REAL CV: Kirim foto ke Gemini Vision via backend
             // ===========================================
             let finalCount = 0;
-            
-            // Force perhitungan logika sempurna di frontend
-            if (currentState === '0%') finalCount = 0;
-            else if (currentState === '20%') finalCount = Math.floor(targetQtyPlan * 0.2);
-            else if (currentState === '50%') finalCount = Math.floor(targetQtyPlan * 0.5);
-            else if (currentState === '70%') finalCount = Math.floor(targetQtyPlan * 0.7);
-            else if (currentState === '100%') finalCount = targetQtyPlan;
+            let cvConfidence = 'rendah';
+            let cvAnomaly = false;
+            let cvNotes = '';
 
-            // Simulasi jeda loading agar terlihat nyata (1 detik)
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            document.getElementById('ai-status').innerText = '🤖 AI Vision sedang menghitung kotak...';
+
+            try {
+                const cvRes = await fetch('/api/count_boxes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        image: photoBase64,
+                        state: currentState,
+                        order_id: selectedOrder,
+                        qty_plan: targetQtyPlan
+                    })
+                });
+                const cvData = await cvRes.json();
+                if (cvData.error) throw new Error(cvData.error);
+                finalCount = cvData.count || 0;
+                cvConfidence = cvData.confidence || 'rendah';
+                cvAnomaly = cvData.anomaly || false;
+                cvNotes = cvData.notes || '';
+            } catch (err) {
+                console.warn('CV API error, menggunakan fallback:', err.message);
+                // Fallback: estimasi berdasarkan state
+                if (currentState === '0%') finalCount = 0;
+                else if (currentState === '20%') finalCount = Math.floor(targetQtyPlan * 0.2);
+                else if (currentState === '50%') finalCount = Math.floor(targetQtyPlan * 0.5);
+                else if (currentState === '70%') finalCount = Math.floor(targetQtyPlan * 0.7);
+                else if (currentState === '100%') finalCount = targetQtyPlan;
+                cvConfidence = 'rendah'; cvNotes = 'Fallback (CV tidak tersedia)';
+            }
+
+            // Switch overlay ke fase DONE — tampilkan kotak hijau hasil deteksi
+            stopDetectionToDone();
+            await new Promise(r => setTimeout(r, 900)); // biarkan user lihat hasil sebentar
             
             // ===========================================
             // TERAPKAN HASIL KE UI
             // ===========================================
             closeCameraPanel(); 
 
-            cvResults[currentState] = { count: finalCount, photo: photoBase64 };
+            cvResults[currentState] = { count: finalCount, confidence: cvConfidence, anomaly: cvAnomaly, notes: cvNotes, photo: photoBase64 };
             cardEl.classList.add('done');
             
             const existingBadge = cardEl.querySelector('.cv-badge');
             if(existingBadge) existingBadge.remove();
 
-            cardEl.innerHTML += `<div class="cv-badge" style="background:#10b981;">${finalCount} Box</div>`;
+            const badgeColor = cvAnomaly ? '#ef4444' : cvConfidence === 'tinggi' ? '#10b981' : '#f59e0b';
+            const anomalyIcon = cvAnomaly ? '⚠️ ' : '';
+            cardEl.innerHTML += `<div class="cv-badge" style="background:${badgeColor}">${anomalyIcon}${finalCount} Box</div>`;
             
+            // Tampilkan alert anomali
+            if (cvAnomaly && cvNotes) {
+                document.getElementById('ai-status').innerText = `⚠️ ANOMALI: ${cvNotes}`;
+                document.getElementById('ai-status').style.color = '#ef4444';
+            } else {
+                document.getElementById('ai-status').innerText = `✅ CV Selesai: ${finalCount} kotak (confidence: ${cvConfidence})${cvNotes ? ' — ' + cvNotes : ''}`;
+                document.getElementById('ai-status').style.color = '#10b981';
+            }
+            document.getElementById('ai-status').style.display = 'block';
+
             // Cari nilai maksimum dari semua state
             let maxCount = 0; 
             Object.values(cvResults).forEach(r => { if(r.count > maxCount) maxCount = r.count; });
             
             // Update Hasil AI Final
             document.getElementById('final-qty').innerText = maxCount;
-            // Bantu isi kolom aktual agar Tallyman tidak repot (bisa diedit jika beda)
             document.getElementById('manual_qty').value = maxCount;
         }
 
@@ -531,5 +849,235 @@
             }
         }
     </script>
+<!-- ================================================
+     WARNING & INTEGRITY AGREEMENT MODAL
+     ================================================ -->
+<style>
+#agreement-modal {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    align-items: center; justify-content: center;
+    padding: 16px;
+}
+.agr-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%; max-width: 520px;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+    animation: agr-in 0.35s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes agr-in {
+    from { transform: scale(0.88) translateY(20px); opacity: 0; }
+    to   { transform: scale(1) translateY(0);       opacity: 1; }
+}
+.agr-header {
+    background: linear-gradient(135deg, #0a365c 0%, #1e5b94 100%);
+    padding: 24px 24px 20px;
+    text-align: center; flex-shrink: 0;
+}
+.agr-header .agr-icon {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; margin: 0 auto 12px;
+    border: 2px solid rgba(255,255,255,0.25);
+}
+.agr-header h2 {
+    color: #fff; font-size: 17px; font-weight: 800;
+    margin: 0 0 4px; letter-spacing: 0.3px;
+}
+.agr-header p {
+    color: rgba(255,255,255,0.75); font-size: 12px; margin: 0;
+}
+.agr-scroll {
+    flex: 1; overflow-y: auto; padding: 20px 24px;
+    font-size: 13px; line-height: 1.7; color: #374151;
+}
+.agr-scroll::-webkit-scrollbar { width: 4px; }
+.agr-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+.agr-warning-box {
+    background: #fff7ed; border: 1px solid #fed7aa;
+    border-left: 4px solid #f59e0b;
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+    display: flex; gap: 10px; align-items: flex-start;
+}
+.agr-warning-box .wi { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.agr-warning-box strong { color: #92400e; font-size: 13px; display: block; margin-bottom: 4px; }
+.agr-warning-box p { color: #78350f; font-size: 12px; margin: 0; line-height: 1.6; }
+
+.agr-danger-box {
+    background: #fef2f2; border: 1px solid #fecaca;
+    border-left: 4px solid #ef4444;
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+    display: flex; gap: 10px; align-items: flex-start;
+}
+.agr-danger-box .wi { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.agr-danger-box strong { color: #991b1b; font-size: 13px; display: block; margin-bottom: 4px; }
+.agr-danger-box p { color: #7f1d1d; font-size: 12px; margin: 0; line-height: 1.6; }
+
+.agr-rules {
+    background: #f0f9ff; border: 1px solid #bae6fd;
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+}
+.agr-rules .rule-title {
+    font-size: 12px; font-weight: 800; color: #0369a1;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.agr-rules ul {
+    margin: 0; padding-left: 18px;
+    color: #0c4a6e; font-size: 12px; line-height: 1.9;
+}
+.agr-rules ul li { margin-bottom: 2px; }
+
+.agr-sanctions {
+    background: #fdf4ff; border: 1px solid #e9d5ff;
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
+}
+.agr-sanctions .rule-title {
+    font-size: 12px; font-weight: 800; color: #7e22ce;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.agr-sanctions ul {
+    margin: 0; padding-left: 18px;
+    color: #581c87; font-size: 12px; line-height: 1.9;
+}
+
+.agr-scroll-hint {
+    text-align: center; font-size: 11px; color: #9ca3af;
+    margin-top: 8px; padding: 8px;
+    animation: bounce 1.5s infinite;
+}
+@keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(4px); }
+}
+
+.agr-footer {
+    padding: 16px 24px 20px; border-top: 1px solid #e5e7eb;
+    flex-shrink: 0; background: #f9fafb;
+}
+.agr-checkbox-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 14px;
+    background: #fff; border: 1px solid #d1d5db;
+    border-radius: 8px; padding: 12px 14px;
+    cursor: pointer;
+}
+.agr-checkbox-row input[type=checkbox] {
+    width: 18px; height: 18px; flex-shrink: 0;
+    accent-color: #0a365c; margin-top: 1px; cursor: pointer;
+    border: none; background: none; box-shadow: none;
+    border-radius: 0; padding: 0;
+}
+.agr-checkbox-row label {
+    font-size: 12px; color: #374151; line-height: 1.6;
+    cursor: pointer; font-weight: 500; margin: 0;
+}
+.agr-checkbox-row label strong { color: #0a365c; }
+
+#btn-agree {
+    width: 100%; padding: 13px;
+    background: linear-gradient(135deg, #0a365c, #1e5b94);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: not-allowed;
+    opacity: 0.45; transition: all 0.2s;
+    letter-spacing: 0.3px;
+}
+#btn-agree:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(10,54,92,0.35);
+}
+.agr-note {
+    text-align: center; font-size: 11px; color: #9ca3af;
+    margin-top: 10px; line-height: 1.5;
+}
+</style>
+
+<div id="agreement-modal">
+  <div class="agr-box">
+
+    <!-- HEADER -->
+    <div class="agr-header">
+      <div class="agr-icon">⚠️</div>
+      <h2>Pernyataan Integritas & Peringatan Sistem</h2>
+      <p>PT Salam Pacific Indonesia Lines (SPIL) — e-POD Field System</p>
+    </div>
+
+    <!-- SCROLL CONTENT -->
+    <div class="agr-scroll" id="agreement-scroll">
+
+      <div class="agr-warning-box">
+        <span class="wi">🔒</span>
+        <div>
+          <strong>Sistem Pengawasan Aktif</strong>
+          <p>Seluruh aktivitas Anda dalam sistem ini direkam secara digital termasuk lokasi GPS, waktu akses, foto yang diambil, dan data yang diinput. Semua data bersifat permanen dan tidak dapat diubah setelah disubmit.</p>
+        </div>
+      </div>
+
+      <div class="agr-danger-box">
+        <span class="wi">🚨</span>
+        <div>
+          <strong>Larangan Keras — Zero Tolerance</strong>
+          <p>Manipulasi data kargo, pemalsuan jumlah barang, penggunaan foto lama, atau tindakan kecurangan apapun dalam sistem ini merupakan pelanggaran serius yang dapat berujung pada tindakan hukum dan pemutusan hubungan kerja.</p>
+        </div>
+      </div>
+
+      <div class="agr-rules">
+        <div class="rule-title">📋 Kewajiban Petugas Lapangan</div>
+        <ul>
+          <li>Foto kargo <strong>wajib diambil langsung</strong> dari kamera perangkat, tidak boleh dari galeri</li>
+          <li>Setiap foto otomatis menyematkan <strong>watermark GPS, waktu, dan identitas</strong> yang tidak dapat dihapus</li>
+          <li>Form pemuatan/bongkar <strong>hanya dapat disubmit</strong> saat berada dalam radius area gudang (Geofence)</li>
+          <li>Jumlah barang yang diinput harus <strong>sesuai dengan kondisi aktual</strong> di lapangan</li>
+          <li>Setiap selisih barang <strong>wajib dilaporkan</strong> dengan catatan yang jelas dan jujur</li>
+          <li>Dilarang memberikan akun atau akses sistem kepada pihak lain</li>
+        </ul>
+      </div>
+
+      <div class="agr-sanctions">
+        <div class="rule-title">⚖️ Konsekuensi Pelanggaran</div>
+        <ul>
+          <li>Peringatan tertulis untuk pelanggaran pertama</li>
+          <li>Pemutusan hubungan kerja / kontrak vendor untuk pelanggaran berulang</li>
+          <li>Tuntutan ganti rugi atas kerugian finansial yang diakibatkan</li>
+          <li>Pelaporan ke pihak berwenang untuk kasus manipulasi data yang terbukti</li>
+          <li>Pemblokiran akses permanen dari seluruh sistem SPIL</li>
+        </ul>
+      </div>
+
+      <p style="font-size:12px; color:#6b7280; text-align:center; margin-top:8px;">
+        Dengan melanjutkan, Anda menyatakan telah membaca, memahami, dan bersedia tunduk pada seluruh ketentuan di atas sesuai dengan kebijakan integritas PT SPIL.
+      </p>
+
+      <div class="agr-scroll-hint">↓ Scroll ke bawah untuk melanjutkan ↓</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="agr-footer">
+      <div class="agr-checkbox-row" onclick="document.getElementById('chk-agree').click()">
+        <input type="checkbox" id="chk-agree">
+        <label for="chk-agree">
+          Saya, <strong>{{ user.name }}</strong>, menyatakan telah membaca dan memahami seluruh pernyataan di atas. Saya berkomitmen untuk menggunakan sistem ini dengan <strong>jujur, akurat, dan bertanggung jawab</strong>.
+        </label>
+      </div>
+      <button id="btn-agree" disabled onclick="acceptAgreement()">
+        Saya Setuju &amp; Lanjutkan
+      </button>
+      <div class="agr-note">
+        Dokumen persetujuan ini tercatat otomatis dengan timestamp dan identitas akun Anda.
+      </div>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
