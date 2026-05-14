@@ -1,4 +1,4 @@
-# SPIL e-POD System — CV Edition (Gemini Vision)
+# SPIL e-POD System
 
 ## Cara Menjalankan
 
