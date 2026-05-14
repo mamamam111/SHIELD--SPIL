@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SPILL Hauling Integrated Electronic Logistic Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           THEME & VARIABLES
+           ========================================= */
+        :root {
+            --primary: #0a365c;       /* SPIL Corporate Navy */
+            --primary-light: #1e5b94;
+            --primary-fade: #e6f0fa;
+            --accent: #f59e0b;        /* Warning/Accent Gold */
+            --success: #10b981;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --surface: #ffffff;
+            --text-dark: #111827;
+            --text-muted: #6b7280;
+            --border: #d1d5db;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+
+        body { 
+            background: linear-gradient(135deg, #0a365c 0%, #1a4f82 100%); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+
+        /* =========================================
+           LOGIN CARD
+           ========================================= */
+        .login-wrapper {
+            background: var(--surface);
+            width: 100%;
+            max-width: 420px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            padding: 40px 40px 20px;
+            text-align: center;
+        }
+
+        .logo-img {
+            max-width: 160px;
+            height: auto;
+            margin-bottom: 16px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .login-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* =========================================
+           FORM ELEMENTS
+           ========================================= */
+        .login-body { padding: 0 40px 40px; }
+
+        .input-group { margin-bottom: 20px; position: relative; }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .input-wrapper { position: relative; }
+
+        /* SVG Icons embedded for clean look */
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: #9ca3af;
+            transition: var(--transition);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px 12px 42px; /* padding-left gives room for icon */
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            color: var(--text-dark);
+            background-color: #f9fafb;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .input-group input:focus {
+            background-color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-fade);
+        }
+
+        .input-group input:focus + .input-icon {
+            color: var(--primary);
+        }
+
+        /* =========================================
+           BUTTON & STATES
+           ========================================= */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover { background-color: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-submit:disabled { background-color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .spinner {
+            display: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* =========================================
+           ALERTS & HINTS
+           ========================================= */
+        #error-msg {
+            background-color: var(--danger-bg);
+            color: var(--danger);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 16px;
+            display: none;
+            border: 1px solid #fecaca;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .hint-box {
+            margin-top: 24px;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .hint-box code {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-header">
+            <img src="/static/spil.jpg" alt="Logo SPIL" class="logo-img" onerror="this.style.display='none';">
+            <h2>SHIELD</h2>
+            <p>SPILL Hauling Integrated Electronic Logistic Dashboard</p>
+        </div>
+
+        <div class="login-body">
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" required placeholder="Masukkan username">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Kata Sandi</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" required placeholder="Masukkan kata sandi">
+                        <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span class="spinner" id="btnSpinner"></span>
+                    <span id="btnText">Login</span>
+                </button>
+            </form>
+
+            <div id="error-msg">Username atau Password salah!</div>
+
+            <div class="hint-box">
+                <strong style="color: var(--text-dark);">Akun User (Password: 123)</strong><br>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; margin-top: 8px;">
+                    <div>Monitoring Div: <code>admin</code></div>
+                    <div>Customer: <code>tamu</code></div>
+                    <div style="margin-top: 4px;">Driver: <code>drv1</code></div>
+                    <div style="margin-top: 4px;">Tallyman: <code>tally1</code></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
+            e.preventDefault(); 
+            
+            const u = document.getElementById("username").value;
+            const p = document.getElementById("password").value;
+            const errorMsg = document.getElementById("error-msg");
+            const btn = document.getElementById("submitBtn");
+            const spinner = document.getElementById("btnSpinner");
+            const btnText = document.getElementById("btnText");
+
+            // UI Loading State
+            errorMsg.style.display = "none";
+            btn.disabled = true;
+            spinner.style.display = "block";
+            btnText.innerText = "Memverifikasi...";
+
+            try {
+                const response = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    btnText.innerText = "Akses Diberikan!";
+                    btn.style.backgroundColor = "var(--success)";
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 500);
+                } else {
+                    // Reset UI & Show Error
+                    btn.disabled = false;
+                    spinner.style.display = "none";
+                    btnText.innerText = "Otorisasi Masuk";
+                    errorMsg.style.display = "block";
+                    errorMsg.innerText = result.error || "Gagal melakukan otorisasi.";
+                }
+            } catch (err) {
+                btn.disabled = false;
+                spinner.style.display = "none";
+                btnText.innerText = "Otorisasi Masuk";
+                errorMsg.style.display = "block";
+                errorMsg.innerText = "Koneksi ke server terputus.";
+            }
+        });
+    </script>
+
+</body>
+</html>

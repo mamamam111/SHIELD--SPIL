@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SPIL e-POD System | Enterprise Dashboard</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+/* =========================================
+   THEME & VARIABLES
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #0a365c;       /* SPIL Corporate Navy */
+    --primary-light: #1e5b94;
+    --primary-fade: #e6f0fa;
+    --accent: #f59e0b;        /* Warning/Accent Gold */
+    --success: #10b981;       /* Emerald Green */
+    --success-bg: #d1fae5;
+    --danger: #ef4444;        /* Red */
+    --danger-bg: #fee2e2;
+    --bg-main: #f3f4f6;       /* Soft Gray Background */
+    --surface: #ffffff;       /* White Cards */
+    --text-dark: #111827;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
+body { background: var(--bg-main); color: var(--text-dark); overflow: hidden; }
+
+/* =========================================
+   LAYOUT
+   ========================================= */
+.app { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+/* SIDEBAR (DARK THEME) */
+.sidebar { width: 260px; background: var(--primary); color: #fff; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; transition: var(--transition); z-index: 10; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
+.logo-container { padding: 24px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.15); }
+.logo-img { max-width: 140px; height: auto; border-radius: 6px; margin-bottom: 10px; background: white; padding: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.logo-text { font-size: 13px; font-weight: 500; color: #cbd5e1; letter-spacing: 0.5px; }
+
+.nav-sec { padding: 20px 20px 8px; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+.nav { display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 500; color: #cbd5e1; cursor: pointer; border-left: 4px solid transparent; transition: var(--transition); }
+.nav:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.nav.on { color: #fff; border-left-color: var(--accent); background: linear-gradient(90deg, rgba(245,158,11,0.15) 0%, transparent 100%); font-weight: 600; }
+.nav-icon { font-size: 16px; opacity: 0.8; }
+
+/* MAIN CONTENT */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+/* TOPBAR */
+.topbar { background: var(--surface); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm); z-index: 5; }
+.topbar h2 { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.clock-display { font-size: 13px; font-weight: 500; color: var(--text-muted); background: var(--bg-main); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
+
+/* LIVE PULSE BADGE */
+.badge-live { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--success-bg); color: #065f46; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; border: 1px solid #a7f3d0; }
+.pulse-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+/* PAGE CONTAINER */
+.content { padding: 24px 28px; flex: 1; overflow-y: auto; }
+.page { display: none; animation: fadeIn 0.4s ease; }
+.page.on { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS & CONTAINERS */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;}
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); transition: var(--transition); }
+.card:hover { box-shadow: var(--shadow-md); }
+.ct { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--bg-main); padding-bottom: 12px; }
+
+/* STATS WIDGET */
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); position: relative; overflow: hidden; }
+.stat::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.stat.g::before { background: var(--success); } .stat.a::before { background: var(--accent); } .stat.r::before { background: var(--danger); }
+.sl { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+.sv { font-size: 32px; font-weight: 800; color: var(--text-dark); line-height: 1; }
+.ss { font-size: 12px; color: var(--text-muted); margin-top: 8px; font-weight: 500;}
+
+/* FORMS & BUTTONS */
+.fg { margin-bottom: 16px; }
+.fr { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+label { font-size: 13px; font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 6px; }
+input, select, textarea { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: var(--radius-md); font-size: 14px; background: #fff; transition: var(--transition); color: var(--text-dark); outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-fade); }
+input[type="range"] { padding: 0; cursor: pointer; }
+
+.btn { padding: 12px 20px; border-radius: var(--radius-md); border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: var(--transition); display: inline-flex; justify-content: center; align-items: center; gap: 8px; }
+.bp { background: var(--primary); color: #fff; box-shadow: 0 2px 4px rgba(10, 54, 92, 0.2); }
+.bp:hover { background: var(--primary-light); transform: translateY(-1px); box-shadow: 0 4px 6px rgba(10, 54, 92, 0.3); }
+.bp:disabled { background: #9ca3af; box-shadow: none; cursor: not-allowed; transform: none; }
+.bs { background: var(--surface); color: var(--text-dark); border: 1px solid #d1d5db; }
+.bs:hover { background: var(--bg-main); }
+.bfull { width: 100%; }
+
+/* MAPS */
+#map-byod, #map-geo { height: 400px; border-radius: var(--radius-md); border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); z-index: 1;}
+
+/* STATUS BARS */
+.gbar { border-radius: var(--radius-md); padding: 12px 16px; display: flex; align-items: center; gap: 16px; margin-bottom: 16px; border: 1px solid transparent; }
+.gok { background: var(--success-bg); border-color: #a7f3d0; } .gok .gt { color: #065f46; } .gok .gs { color: var(--success); }
+.gwarn { background: #fef3c7; border-color: #fde68a; } .gwarn .gt { color: #92400e; } .gwarn .gs { color: #d97706; }
+.gerr { background: var(--danger-bg); border-color: #fecaca; } .gerr .gt { color: #991b1b; } .gerr .gs { color: var(--danger); }
+.gwait { background: var(--bg-main); border-color: var(--border); } .gwait .gt { color: var(--text-dark); } .gwait .gs { color: var(--text-muted); }
+.gbar .gi { font-size: 24px; } .gbar .gt { font-size: 14px; font-weight: 700; } .gbar .gs { font-size: 12px; margin-top: 2px; font-weight: 500;}
+
+/* TABLES */
+table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+th { text-align: left; padding: 12px 16px; background: var(--bg-main); color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--border); border-top: 1px solid var(--border); }
+th:first-child { border-top-left-radius: var(--radius-md); border-left: 1px solid var(--border); }
+th:last-child { border-top-right-radius: var(--radius-md); border-right: 1px solid var(--border); }
+td { padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--text-dark); font-weight: 500; }
+tr:hover td { background: #f8fafc; }
+
+/* BADGES */
+.badge-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+.b-muat { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.b-transit { background: #e0e7ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.b-selesai { background: var(--success-bg); color: #065f46; border: 1px solid #a7f3d0; }
+.b-ok { background: var(--success-bg); color: #065f46; }
+.b-err { background: var(--danger-bg); color: #991b1b; }
+
+/* CV UI */
+.cv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+.cv-card { border: 2px dashed #cbd5e1; border-radius: var(--radius-md); overflow: hidden; position: relative; cursor: pointer; transition: var(--transition); background: #f8fafc; aspect-ratio: 4/3; display: flex; flex-direction: column; }
+.cv-card:hover { border-color: var(--primary); background: var(--primary-fade); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.cv-card.active { border: 2px solid var(--primary); box-shadow: 0 0 0 3px var(--primary-fade); }
+.cv-card.done { border: 2px solid var(--success); background: #fff; }
+.cv-lbl { font-size: 12px; font-weight: 800; text-align: center; padding: 6px; background: #e2e8f0; color: #475569; z-index: 2; border-bottom: 1px solid #cbd5e1; }
+.cv-card.done .cv-lbl { background: var(--success); color: #fff; border-bottom: none; }
+.cv-ph { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: #94a3b8; gap: 8px;}
+.cv-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1; display: none; }
+.cv-res-badge { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.85); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 12px; z-index: 3; backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.cv-res-badge.ok { border: 1px solid var(--success); color: #34d399; }
+.cv-res-badge.anom { border: 1px solid var(--danger); color: #f87171; }
+
+.camera-container { background: #111827; border-radius: var(--radius-lg); padding: 20px; text-align: center; position: relative; margin-bottom: 20px; border: 1px solid #374151; box-shadow: var(--shadow-hover); display: none;}
+.camera-container h4 { color: #fff; font-size: 15px; margin-bottom: 16px; font-weight: 600; display: flex; justify-content: space-between;}
+#camera-preview { width: 100%; border-radius: var(--radius-md); background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+.cam-btn-group { display: flex; gap: 12px; margin-top: 16px; }
+
+/* TABS */
+.tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 24px; }
+.tab { padding: 12px 24px; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: var(--transition); }
+.tab:hover { color: var(--primary); background: var(--bg-main); border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); }
+.tab.on { color: var(--primary); border-bottom-color: var(--primary); }
+
+.lbox { background: var(--primary-fade); border: 1px solid #bfdbfe; border-radius: var(--radius-md); padding: 16px; }
+.lbox .lt { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;}
+.lr { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed rgba(15, 76, 129, 0.15); }
+.lr:last-child { border-bottom: none; }
+.lr .k { color: #475569; font-weight: 500; } 
+.lr .v { font-weight: 700; color: var(--primary); }
+
+/* SPINNER */
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* BYOD LIST */
+.driver-card { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 12px; cursor: pointer; transition: var(--transition); background: #fff; }
+.driver-card:hover { border-color: var(--primary); background: var(--primary-fade); transform: translateX(4px); }
+.driver-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-fade); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; border: 1px solid #bfdbfe; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="sidebar">
+  <div class="logo-container">
+    <img src="spil.jpg" alt="SPIL Logo" class="logo-img" onerror="this.style.display='none';">
+    <div class="logo-text">e-POD OPERATIONS</div>
+  </div>
+  
+  <div style="flex: 1; padding-top: 10px;">
+      <div class="nav-sec">Area Operasional</div>
+      <div class="nav on" onclick="sp('geo',this)"><span class="nav-icon">📍</span> Verifikasi Lokasi</div>
+      <div class="nav" onclick="sp('cam',this)"><span class="nav-icon">📸</span> Watermark Kamera</div>
+      <div class="nav" onclick="sp('cv',this)"><span class="nav-icon">🤖</span> AI Hitung Kargo</div>
+      <div class="nav" onclick="sp('form',this)"><span class="nav-icon">📋</span> Form BAP / e-POD</div>
+      
+      <div class="nav-sec" style="margin-top: 10px;">Control Tower</div>
+      <div class="nav" onclick="sp('byod',this)"><span class="nav-icon">🗺️</span> Armada Tracker</div>
+      <div class="nav" onclick="sp('dash',this)"><span class="nav-icon">📊</span> Executive Dash</div>
+      <div class="nav" onclick="sp('recs',this)"><span class="nav-icon">🗂️</span> Database Histori</div>
+  </div>
+  
+  <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #64748b; text-align: center;">
+      v2.0 Enterprise Build<br>© 2026 PT SPIL
+  </div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+      <h2 id="ptitle">📍 Verifikasi Lokasi (Geofence)</h2>
+      <div class="topbar-right">
+        <div class="clock-display" id="clock">00:00:00 WIB</div>
+        <div class="badge-live">
+            <div class="pulse-dot"></div>
+            Sistem Aktif
+        </div>
+      </div>
+    </div>
+
+<div class="content">
+
+<div class="page on" id="page-geo">
+  <div class="g2">
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="ct">⚙️ Pengaturan Titik Geofence</div>
+        <div class="fg"><label>Pilih Target Gudang / Pelabuhan</label>
+          <select id="geo-wh">
+            <option value="unilever_cibitung">Gudang Unilever Cibitung (100m)</option>
+            <option value="bogasari_cilincing">Gudang Bogasari Cilincing (100m)</option>
+            <option value="tanjung_priok">Pelabuhan Tanjung Priok (150m)</option>
+          </select>
+        </div>
+        <div class="fg"><label>Simulasi Alat Jarak (Meter)</label>
+          <input type="range" id="geo-sim" min="0" max="400" value="150" oninput="geoSim(this.value)">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:6px;">
+              <span>0m</span><strong id="geo-sim-lbl" style="color:var(--primary);">150 m</strong><span>400m</span>
+          </div>
+        </div>
+        <div class="fr" style="margin-bottom:0; margin-top: 20px;">
+            <button class="btn bs" onclick="geoGPS()">📡 Ambil GPS Satelit</button>
+            <button class="btn bp" id="geo-btn" disabled onclick="doCheckin()">🔒 Kunci Lokasi</button>
+        </div>
+      </div>
+      
+      <div id="geo-bar" class="gbar gwait">
+          <span class="gi">⏳</span>
+          <div><div class="gt">Menyelaraskan Koordinat...</div><div class="gs">Gunakan slider atau GPS Satelit</div></div>
+      </div>
+      
+      <div class="card">
+        <div class="ct">📡 Telemetri Geolocation</div>
+        <div class="lbox" style="background: transparent; border-style: dashed;">
+          <div class="lr"><span class="k">Koordinat (Lat/Lng)</span><span class="v" id="geo-coord">--</span></div>
+          <div class="lr"><span class="k">Jarak Geodesik</span><span class="v" id="geo-dist">--</span></div>
+          <div class="lr"><span class="k">Status Izin</span><span class="v" id="geo-stxt">--</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="padding: 10px;">
+        <div id="map-geo" style="height: 100%; border: none;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-cam">
+  <div class="g2">
+    <div class="card">
+      <div class="ct">📸 Modul Kamera Lapangan</div>
+      <div id="cam-info" class="gbar gwait"><span class="gi">📷</span><div><div class="gt">Sistem Kamera Standby</div><div class="gs">Tekan tombol aktivasi di bawah</div></div></div>
+      
+      <div style="background:#111827; border-radius:8px; padding:10px; margin-bottom:16px;">
+          <video id="cam-vid" autoplay playsinline style="width:100%; border-radius:4px; display:none;"></video>
+          <canvas id="cam-cvs" style="display:none;"></canvas>
+      </div>
+
+      <div class="fr" style="margin-bottom:0;">
+        <button class="btn bs" onclick="startCam()">🟢 Aktifkan</button>
+        <button class="btn bp" id="snap-btn" disabled onclick="snapPhoto()">📸 Jepret Kargo</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🖼️ Hasil Render Watermark</div>
+      <div id="photo-res" style="text-align:center; padding:40px 20px; color:var(--text-muted); font-weight:500; background:var(--bg-main); border-radius:8px; border:2px dashed var(--border);">Menunggu gambar diambil...</div>
+      
+      <div id="wm-data" style="display:none; margin-top:20px;">
+        <div class="lbox">
+          <div class="lt">🔒 Segel Data Kriptografi</div>
+          <div class="lr"><span class="k">GPS Lock</span><span class="v" id="wm-coord">--</span></div>
+          <div class="lr"><span class="k">Waktu Server</span><span class="v" id="wm-ts">--</span></div>
+          <div class="lr"><span class="k">Operator</span><span class="v">DRV-2041</span></div>
+          <div class="lr"><span class="k">Integritas</span><span class="badge-status b-ok">✅ Valid</span></div>
+        </div>
+        <button class="btn bp bfull" style="margin-top:16px;" onclick="savePhoto()">💾 Masukkan ke Sistem e-POD</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-cv">
+  <div class="card" style="margin-bottom:20px;">
+    <div class="ct">⚙️ Konfigurasi Engine Computer Vision</div>
+    <div class="fr" style="margin-bottom:0;">
+      <div class="fg" style="margin:0;"><label>Pilih Target Dokumen</label>
+        <select id="cv-order">
+          <option value="SOPT-001|224">SOPT-001 · Unilever (224 karton)</option>
+          <option value="SOPT-002|180">SOPT-002 · Bogasari (180 karton)</option>
+          <option value="SOPT-003|312">SOPT-003 · Indofood (312 karton)</option>
+        </select>
+      </div>
+      <div class="fg" style="margin:0;"><label>Metode Input Gambar</label>
+        <select id="cv-mode" onchange="updateCvMode()">
+          <option value="camera">Live Camera (Aplikasi)</option>
+          <option value="upload">Bypass Upload (Mode Testing)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:24px; padding-bottom: 30px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 12px;">
+        <div class="ct" style="margin:0; border:none; padding:0;">📸 Timeline Pengambilan Gambar (5 State)</div>
+        <div style="font-size:12px; font-weight:700; color:var(--primary); background:var(--primary-fade); padding:6px 12px; border-radius:20px;">AI Engine: Aktif</div>
+    </div>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom: 16px;">Ambil gambar pada persentase pemuatan yang sesuai. AI akan mengambil nilai box tertinggi secara otomatis.</p>
+    
+    <div class="cv-grid" id="cv-grid"></div>
+
+    <div class="camera-container" id="cv-panel">
+      <h4>
+          <span id="cv-panel-title">📡 Membuka Koneksi...</span>
+          <span style="cursor:pointer; color:#9ca3af; font-size:12px; font-weight:500;" onclick="resetCvPanel()">✕ Tutup</span>
+      </h4>
+      
+      <video id="cv-vid" autoplay playsinline></video>
+      <canvas id="cv-cvs" style="display:none;"></canvas>
+      
+      <div id="cv-upload" style="border:2px dashed #4b5563; border-radius:8px; padding:40px; cursor:pointer; display:none; background:rgba(255,255,255,0.05);" onclick="document.getElementById('cv-file').click()">
+        <div style="font-size:40px; margin-bottom:12px;">📁</div>
+        <div style="color:#e5e7eb; font-weight:600;">Klik untuk Upload Gambar Kargo</div>
+        <div style="color:#9ca3af; font-size:11px; margin-top:8px;">Format didukung: JPG, PNG</div>
+      </div>
+      <input type="file" id="cv-file" accept="image/*" style="display:none;" onchange="cvFileUpload(event)">
+      
+      <div class="cam-btn-group" id="cv-btns">
+        <button class="btn bs" style="flex:1; background:#374151; color:#fff; border-color:#4b5563;" id="cv-cam-btn" onclick="startCvCam()">🎥 Nyalakan Lensa</button>
+        <button class="btn bp" style="flex:1; background:var(--success);" id="cv-snap-btn" disabled onclick="snapCv()">🤖 Eksekusi Analisis AI</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+      <div class="card">
+        <div class="ct">📊 Kalkulasi Akhir Sistem CV</div>
+        <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:8px;">
+          <span>Progress State: <strong style="color:var(--text-dark);" id="cv-done">0</strong> / 5</span>
+          <span>Max Box Terbaca: <strong style="color:var(--primary); font-size: 15px;" id="cv-max">--</strong></span>
+        </div>
+        <div style="height:10px; background:var(--border); border-radius:20px; overflow:hidden; margin-bottom: 20px;">
+            <div id="cv-pfill" style="height:100%; background:var(--success); width:0%; transition:var(--transition);"></div>
+        </div>
+        <div id="cv-rows" style="margin-top:16px;"></div>
+      </div>
+
+      <div class="card">
+          <div class="ct">🔍 Log Inspeksi Terbaru</div>
+          <div class="lbox" style="margin-bottom: 16px;">
+             <div class="lr"><span class="k">State Aktif</span><span class="v" id="cvr-state">--</span></div>
+             <div class="lr"><span class="k">Box Terdeteksi</span><span class="v" id="cvr-count" style="font-size:18px;">--</span></div>
+             <div class="lr"><span class="k">Confidence Rate</span><span class="v" id="cvr-conf">--</span></div>
+             <div class="lr"><span class="k">Indikasi Anomali</span><span class="v" id="cvr-anom">--</span></div>
+          </div>
+          <div id="cv-anom-area"></div>
+          
+          <div class="fr" style="margin-top:20px; margin-bottom:0;">
+            <button class="btn bs" onclick="resetCv()">🔄 Reset CV</button>
+            <button class="btn bp" id="cv-export" onclick="exportCv()" disabled style="background:var(--success);">📄 Export Log</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div class="page" id="page-form">
+  <div class="tabs">
+    <div class="tab on" onclick="swTab('muat',this)">Protokol Pemuatan (Loading)</div>
+    <div class="tab" onclick="swTab('bongkar',this)">Protokol Pembongkaran (Unload)</div>
+  </div>
+  
+  <div class="g2">
+    <div class="card">
+      <div id="form-gbar" class="gbar gwait"><span class="gi">📍</span><div><div class="gt">Validasi Geofence Terkunci</div><div class="gs">Harap verifikasi lokasi terlebih dahulu</div></div></div>
+      
+      <div class="fr">
+        <div class="fg"><label>Nomor Referensi (Order)</label>
+          <select id="form-order">
+            <option value="SOPT-001">SOPT-001 (224 karton)</option>
+            <option value="SOPT-002">SOPT-002 (180 karton)</option>
+            <option value="SOPT-003">SOPT-003 (312 karton)</option>
+          </select>
+        </div>
+        <div class="fg"><label>Kode ID Operator</label><input type="text" id="form-drv" value="DRV-2041" readonly style="background:var(--bg-main);"></div>
+      </div>
+      
+      <div class="fg"><label>Nama Operator Bertugas</label><input type="text" id="form-drvn" value="Budi Santoso"></div>
+      
+      <div class="fg">
+        <label>Input Kuantitas Aktual <span id="form-tlbl">(Muat)</span></label>
+        <input type="number" id="form-qty" value="224" min="0" oninput="chkDiff()" style="font-size:18px; font-weight:700; color:var(--primary);">
+        <p style="font-size:12px; font-weight:600; margin-top:6px;" id="form-diff"></p>
+      </div>
+      
+      <div class="fg" id="cv-att" style="display:none;">
+        <label>Integrasi Data Computer Vision</label>
+        <div class="lbox" style="background:#ecfdf5; border-color:#a7f3d0;">
+          <div class="lt" style="color:#065f46;">🤖 Lampiran AI Terkoneksi</div>
+          <div id="cv-att-detail" style="font-size:13px; color:#065f46; font-weight:500;"></div>
+        </div>
+      </div>
+      
+      <div class="fg"><label>Catatan Ekstra / Kendala Form</label><textarea id="form-notes" rows="3" placeholder="Deskripsikan kondisi kargo jika ada kerusakan..."></textarea></div>
+      <button class="btn bp bfull" id="form-sub" onclick="submitForm()">🔒 Segel Dokumen &amp; Transmisi</button>
+    </div>
+    
+    <div class="card" style="background: var(--primary); color: white;">
+      <div class="ct" style="color:white; border-color:rgba(255,255,255,0.2);">📄 Preview Dokumen Digital</div>
+      <div class="lbox" style="background:rgba(255,255,255,0.1); border:none; color:white;">
+        <div class="lr" style="border-bottom-color:rgba(255,255,255,0.2);"><span class="k" style="color:#cbd5e1;">Order ID</span><span class="v" style="color:white;" id="pv-order">SOPT-001</span></div>
+        <div class="lr" style="border-bottom-color:rgba(255,255,255,0.2);"><span class="k" style="color:#cbd5e1;">Jenis Tugas</span><span class="v" style="color:white;" id="pv-type">Muat</span></div>
+        <div class="lr" style="border-bottom-color:rgba(255,255,255,0.2);"><span class="k" style="color:#cbd5e1;">Total Qty</span><span class="v" style="color:#fcd34d; font-size:16px;" id="pv-qty">224 karton</span></div>
+        <div class="lr" style="border-bottom-color:rgba(255,255,255,0.2);"><span class="k" style="color:#cbd5e1;">Geofence Sign</span><span class="v" style="color:white;" id="pv-geo">⏳ Menunggu</span></div>
+        <div class="lr" style="border-bottom-color:rgba(255,255,255,0.2);"><span class="k" style="color:#cbd5e1;">GPS Tag</span><span class="v" style="color:#cbd5e1; font-weight:400;" id="pv-coord">--</span></div>
+        <div class="lr" style="border-bottom-color:rgba(255,255,255,0.2);"><span class="k" style="color:#cbd5e1;">Time Sync</span><span class="v" style="color:white;" id="pv-ts">--</span></div>
+        <div class="lr"><span class="k" style="color:#cbd5e1;">AI Counter</span><span class="v" style="color:#6ee7b7;" id="pv-cv">Offline</span></div>
+      </div>
+      <div id="form-ok" style="display:none; margin-top:20px; background:rgba(16,185,129,0.2); border:1px solid #34d399;" class="gbar"><span class="gi">✅</span><div><div class="gt" style="color:#fff;">Transmisi Sukses</div><div class="gs" style="color:#d1fae5;">Data tersinkron ke Control Tower</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-byod">
+  <div class="g2">
+    <div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="ct">📡 Simulasi Pergerakan Armada (BYOD)</div>
+        <div class="fg"><label>Pilih Unit Armada</label>
+          <select id="byod-drv">
+            <option value="DRV-2041|Budi Santoso|SOPT-001">Truk 1: DRV-2041 · Budi Santoso</option>
+            <option value="DRV-1055|Agus Purnomo|SOPT-002">Truk 2: DRV-1055 · Agus Purnomo</option>
+            <option value="DRV-0877|Rudi Hartono|SOPT-003">Truk 3: DRV-0877 · Rudi Hartono</option>
+          </select>
+        </div>
+        <button class="btn bs bfull" onclick="byodGPS()" style="margin-bottom:12px;">📍 Tembak Koordinat GPS Asli</button>
+        
+        <div class="fg" style="margin-top:16px;"><label>Atur Kecepatan Simulasi (km/h)</label>
+          <input type="range" id="byod-spd" min="0" max="120" value="40" style="margin-bottom:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--primary);">
+              <span>Berhenti</span><span id="byod-spd-lbl">40 km/h</span><span>Tol (120)</span>
+          </div>
+        </div>
+        <div id="byod-status" style="font-size:12px; font-weight:500; color:var(--success); padding:12px; background:var(--success-bg); border-radius:6px; text-align:center;">Sistem Standby. Klik sembarang di peta untuk memindahkan truk.</div>
+      </div>
+      <div class="card"><div class="ct">📡 Armada Terkoneksi (Live)</div><div id="drv-list"></div></div>
+    </div>
+    <div class="card" style="padding:10px;">
+      <div id="map-byod" style="height: 100%; min-height: 500px; border:none;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-dash">
+  <div class="g4">
+    <div class="stat g">
+        <div class="sl">Unit OTW</div>
+        <div class="sv" id="d-aktif">--</div>
+        <div class="ss">Muat & Transit</div>
+    </div>
+    <div class="stat a">
+        <div class="sl">Discharging</div>
+        <div class="sv" id="d-sel">--</div>
+        <div class="ss">Order Selesai</div>
+    </div>
+    <div class="stat r">
+        <div class="sl">Klaim Susut</div>
+        <div class="sv" id="d-klm">--</div>
+        <div class="ss">Selisih Kargo</div>
+    </div>
+    <div class="stat" style="border-left: 4px solid #6b7280;">
+        <div class="sl">Lost Signal</div>
+        <div class="sv" id="d-gps">--</div>
+        <div class="ss">GPS Offline</div>
+    </div>
+  </div>
+  
+  <div class="g2">
+    <div class="card"><div class="ct">📈 Matriks Kargo Harian</div><div id="dash-orders" style="max-height: 400px; overflow-y:auto; padding-right: 10px;"></div></div>
+    <div class="card"><div class="ct">⚡ Log Aktivitas Terbaru</div><div id="dash-recs" style="max-height: 400px; overflow-y:auto; padding-right: 10px;"></div></div>
+  </div>
+</div>
+
+<div class="page" id="page-recs">
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div class="ct" style="margin:0; border:none; padding:0;">🗂️ Database e-POD Center</div>
+      <button class="btn bs" onclick="loadRecs()"><span class="spinner" style="border-color:var(--primary); border-top-color:transparent; width:14px; height:14px;"></span> Refresh Data</button>
+    </div>
+    <div style="overflow-x:auto; border: 1px solid var(--border); border-radius: var(--radius-md);">
+      <table>
+        <thead><tr><th>ID Resi</th><th>Doc. Order</th><th>Aktivitas</th><th>Final Qty</th><th>AI Audit</th><th>Operator</th><th>Lokasi Valid</th><th>Jarak Pagar</th><th>Waktu Audit</th></tr></thead>
+        <tbody id="recs-tb"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+// ==========================================
+// STATE MANAGEMENT & ROUTING
+// ==========================================
+let checkedIn=false, cLat=null, cLng=null;
+let formType='muat';
+let mapGeo=null, mapByod=null, geoMark=null, byodMarks={};
+let savedPhoto=null;
+let whs={};
+
+const STATES=['0%','20%','50%','70%','100%'];
+let cvRes={}, cvActive=null, cvStream=null;
+
+const TITLES = {
+    geo: '📍 Verifikasi Lokasi (Geofence)',
+    cam: '📸 Watermark Kamera Ops',
+    cv:  '🤖 AI Computer Vision',
+    form:'📋 Dokumen BAP / e-POD',
+    byod:'🗺️ Pelacakan Armada (BYOD)',
+    dash:'📊 Executive Dashboard',
+    recs:'🗂️ Master Database'
+};
+
+function sp(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+    document.querySelectorAll('.nav').forEach(n => n.classList.remove('on'));
+    document.getElementById('page-' + id).classList.add('on');
+    el.classList.add('on');
+    document.getElementById('ptitle').textContent = TITLES[id] || id;
+    
+    // Refresh maps rendering bug
+    if(id==='byod') setTimeout(() => mapByod && mapByod.invalidateSize(), 150);
+    if(id==='geo') setTimeout(() => mapGeo && mapGeo.invalidateSize(), 150);
+    
+    // Auto load data on dashboard/records
+    if(id==='dash') loadDash();
+    if(id==='recs') loadRecs();
+}
+
+// ==========================================
+// INITIALIZATION
+// ==========================================
+async function init() {
+    try {
+        const r = await fetch('/api/warehouses'); 
+        whs = await r.json();
+    } catch(e) { console.log("Gagal memuat gudang. Pakai fallback."); }
+    
+    initMapGeo(); initMapByod(); 
+    loadDash(); loadRecs(); initCvGrid();
+    
+    // Background Loops
+    setInterval(loadDash, 15000); 
+    setInterval(refreshByod, 5000);
+    
+    // Clock
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID') + ' WIB';
+        document.getElementById('pv-ts').textContent = now.toLocaleTimeString('id-ID');
+    }, 1000);
+    
+    geoSim(150); // initial sim
+}
+
+// ==========================================
+// GEOFENCE SYSTEM
+// ==========================================
+function initMapGeo() {
+    mapGeo = L.map('map-geo').setView([-6.2841, 107.1563], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapGeo);
+    
+    Object.values(whs).forEach(w => {
+        L.circle([w.lat, w.lng], {radius: w.radius, color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, weight: 2}).addTo(mapGeo);
+        L.marker([w.lat, w.lng], {icon: L.divIcon({html: '🏭', iconSize:[24,24], className:''})}).bindPopup(`<b>${w.name}</b><br>Radius Operasional: ${w.radius}m`).addTo(mapGeo);
+    });
+    geoMark = L.circleMarker([-6.2841, 107.1650], {radius: 8, color: '#ef4444', fillColor: '#ef4444', fillOpacity: 1}).bindPopup('Unit Anda').addTo(mapGeo);
+}
+
+function geoSim(v) {
+    document.getElementById('geo-sim-lbl').textContent = v + ' m';
+    const wh = whs[document.getElementById('geo-wh').value]; 
+    if(!wh) return;
+    const off = v / 111000; // rough degree conversion
+    updateGeo(parseFloat(v), wh.lat + off, wh.lng, false);
+}
+
+async function geoGPS() {
+    if(!navigator.geolocation) { alert('Sistem GPS tidak didukung perangkat ini.'); return; }
+    
+    const bar = document.getElementById('geo-bar');
+    bar.className = 'gbar gwait';
+    bar.innerHTML = `<span class="gi"><div class="spinner"></div></span><div><div class="gt">Menghubungi Satelit...</div><div class="gs">Mohon tunggu akurasi sinyal</div></div>`;
+    
+    navigator.geolocation.getCurrentPosition(pos => {
+        const {latitude:lat, longitude:lng} = pos.coords;
+        const wh = whs[document.getElementById('geo-wh').value];
+        updateGeo(hav(lat, lng, wh.lat, wh.lng), lat, lng, true);
+    }, () => {
+        bar.className = 'gbar gerr';
+        bar.innerHTML = `<span class="gi">❌</span><div><div class="gt">GPS Diblokir</div><div class="gs">Akses lokasi ditolak browser</div></div>`;
+    }, {timeout:10000, enableHighAccuracy:true});
+}
+
+function updateGeo(dist, lat, lng, real) {
+    const wh = whs[document.getElementById('geo-wh').value];
+    const inside = dist <= wh.radius;
+    const rd = Math.round(dist);
+    
+    document.getElementById('geo-coord').innerHTML = real ? `<code>${lat.toFixed(5)}, ${lng.toFixed(5)}</code>` : '<span class="badge-status b-transit">Simulasi</span>';
+    document.getElementById('geo-dist').textContent = `${rd} meter (Batas: ${wh.radius}m)`;
+    document.getElementById('geo-stxt').innerHTML = inside ? '<span class="badge-status b-ok">✅ Diizinkan</span>' : '<span class="badge-status b-err">❌ Dilarang</span>';
+    
+    const bar = document.getElementById('geo-bar');
+    if(inside) {
+        bar.className = 'gbar gok';
+        bar.innerHTML = `<span class="gi">✅</span><div><div class="gt">Radius Tervalidasi</div><div class="gs">Unit berada ${rd}m dari ${wh.name}</div></div>`;
+        document.getElementById('geo-btn').disabled = false;
+    } else {
+        bar.className = 'gbar gerr';
+        bar.innerHTML = `<span class="gi">⚠️</span><div><div class="gt">Di Luar Area Operasional</div><div class="gs">Unit berjarak ${rd}m. Mendekatlah ke gudang.</div></div>`;
+        document.getElementById('geo-btn').disabled = true;
+    }
+    
+    if(geoMark && mapGeo) { geoMark.setLatLng([lat, lng]); mapGeo.setView([lat, lng], 15); }
+    cLat = lat; cLng = lng;
+    document.getElementById('pv-coord').textContent = real ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : 'Simulasi';
+}
+
+function doCheckin() {
+    checkedIn = true;
+    const wh = whs[document.getElementById('geo-wh').value];
+    const bar = document.getElementById('form-gbar');
+    bar.className = 'gbar gok';
+    bar.innerHTML = `<span class="gi">🔒</span><div><div class="gt">Geofence Terkunci Aktif</div><div class="gs">${wh.name}</div></div>`;
+    document.getElementById('pv-geo').innerHTML = '<span class="badge-status b-ok">✅ Valid</span>';
+    
+    // Auto jump to Form tab
+    sp('form', document.querySelectorAll('.nav')[3]);
+}
+
+// ==========================================
+// CAMERA & WATERMARK
+// ==========================================
+async function startCam() {
+    try {
+        camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}, audio:false});
+        const v = document.getElementById('cam-vid'); 
+        v.srcObject = camStream; v.style.display = 'block';
+        document.getElementById('snap-btn').disabled = false;
+        document.getElementById('cam-info').className = 'gbar gok';
+        document.getElementById('cam-info').innerHTML = '<span class="gi">🟢</span><div><div class="gt">Kamera Online</div><div class="gs">Arahkan pada kargo dan tekan Jepret</div></div>';
+    } catch(e) {
+        document.getElementById('cam-info').className = 'gbar gerr';
+        document.getElementById('cam-info').innerHTML = '<span class="gi">❌</span><div><div class="gt">Akses Ditolak</div><div class="gs">Periksa izin kamera di browser</div></div>';
+    }
+}
+
+function snapPhoto() {
+    const vid = document.getElementById('cam-vid'), cvs = document.getElementById('cam-cvs');
+    cvs.width = vid.videoWidth || 640; cvs.height = vid.videoHeight || 480;
+    const ctx = cvs.getContext('2d'); 
+    ctx.drawImage(vid, 0, 0);
+    
+    const now = new Date().toLocaleString('id-ID');
+    const coord = cLat ? `${cLat.toFixed(5)}, ${cLng.toFixed(5)}` : 'Simulasi GPS';
+    
+    // Draw Corporate Watermark
+    ctx.fillStyle = 'rgba(10, 54, 92, 0.75)'; // SPIL Navy
+    ctx.fillRect(0, cvs.height - 80, cvs.width, 80);
+    ctx.fillStyle = '#fff'; ctx.font = '14px "Segoe UI", sans-serif';
+    ctx.fillText(`📍 GPS Lock: ${coord}`, 15, cvs.height - 55);
+    ctx.fillText(`🕐 Time: ${now} WIB`, 15, cvs.height - 32);
+    ctx.fillStyle = '#fcd34d'; ctx.font = 'bold 14px "Segoe UI"';
+    ctx.fillText(`👤 OPR: DRV-2041 | DOC: SOPT-001`, 15, cvs.height - 10);
+    
+    const url = cvs.toDataURL('image/jpeg', 0.85); 
+    savedPhoto = url;
+    
+    document.getElementById('photo-res').innerHTML = `<img src="${url}" style="max-width:100%; border-radius:6px; box-shadow:0 4px 6px rgba(0,0,0,0.1);">`;
+    document.getElementById('wm-data').style.display = 'block';
+    document.getElementById('wm-coord').textContent = coord;
+    document.getElementById('wm-ts').textContent = now;
+    
+    if(camStream) { camStream.getTracks().forEach(t=>t.stop()); vid.style.display='none'; }
+    document.getElementById('cam-info').className = 'gbar gwait';
+    document.getElementById('cam-info').innerHTML = '<span class="gi">📷</span><div><div class="gt">Kamera Offline</div><div class="gs">Sistem dimatikan otomatis</div></div>';
+}
+function savePhoto() { alert('Data berhasil diamankan di memori lokal e-POD.'); }
+
+// ==========================================
+// CV AI MODULE
+// ==========================================
+function initCvGrid() {
+    const g = document.getElementById('cv-grid'); g.innerHTML = '';
+    STATES.forEach(s => {
+        const safe = s.replace('%','');
+        g.innerHTML += `
+        <div class="cv-card" id="cvc-${safe}" onclick="selCvState('${s}')">
+            <div class="cv-lbl">${s}</div>
+            <div class="cv-ph" id="cvp-${safe}"><span style="font-size:24px;">📦</span>Ambil Foto</div>
+        </div>`;
+    });
+    updateCvSum();
+}
+
+function updateCvMode() { if(cvActive) selCvState(cvActive); }
+
+function selCvState(s) {
+    cvActive = s;
+    document.getElementById('cv-panel-title').textContent = `📡 Mengakses Lensa: State ${s}`;
+    document.querySelectorAll('.cv-card').forEach(c => c.classList.remove('active'));
+    
+    const card = document.getElementById('cvc-'+s.replace('%',''));
+    if(card) card.classList.add('active');
+    
+    document.getElementById('cv-panel').style.display = 'block';
+    
+    const mode = document.getElementById('cv-mode').value;
+    if(mode === 'upload') {
+        document.getElementById('cv-upload').style.display = 'block';
+        document.getElementById('cv-vid').style.display = 'none';
+        document.getElementById('cv-btns').style.display = 'none';
+    } else {
+        document.getElementById('cv-upload').style.display = 'none';
+        document.getElementById('cv-vid').style.display = 'block';
+        document.getElementById('cv-btns').style.display = 'flex';
+        document.getElementById('cv-snap-btn').disabled = true;
+    }
+}
+
+function resetCvPanel() {
+    document.getElementById('cv-panel').style.display = 'none';
+    if(cvStream) { cvStream.getTracks().forEach(t=>t.stop()); }
+    document.querySelectorAll('.cv-card').forEach(c => c.classList.remove('active'));
+}
+
+async function startCvCam() {
+    if(!cvActive) return;
+    try {
+        cvStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+        const v = document.getElementById('cv-vid'); 
+        v.srcObject = cvStream; 
+        document.getElementById('cv-snap-btn').disabled = false;
+        document.getElementById('cv-cam-btn').innerHTML = '🟢 Lensa Aktif';
+    } catch(e) { alert('Gagal memuat modul kamera.'); }
+}
+
+async function snapCv() {
+    const vid = document.getElementById('cv-vid'), cvs = document.getElementById('cv-cvs');
+    cvs.width = vid.videoWidth || 640; cvs.height = vid.videoHeight || 480;
+    const ctx = cvs.getContext('2d'); ctx.drawImage(vid, 0, 0);
+    drawCvWatermark(ctx, cvs.width, cvs.height, cvActive);
+    
+    if(cvStream) { cvStream.getTracks().forEach(t=>t.stop()); document.getElementById('cv-cam-btn').innerHTML = '🎥 Nyalakan Lensa'; }
+    resetCvPanel();
+    
+    await runCv(cvs.toDataURL('image/jpeg', 0.8), cvActive);
+}
+
+function cvFileUpload(e) {
+    const file = e.target.files[0]; if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = new Image();
+        img.onload = async () => {
+            const cvs = document.getElementById('cv-cvs');
+            cvs.width = img.width; cvs.height = img.height;
+            const ctx = cvs.getContext('2d'); ctx.drawImage(img, 0, 0);
+            drawCvWatermark(ctx, cvs.width, cvs.height, cvActive);
+            resetCvPanel();
+            await runCv(cvs.toDataURL('image/jpeg', 0.8), cvActive);
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function drawCvWatermark(ctx, W, H, state) {
+    ctx.fillStyle = 'rgba(10, 54, 92, 0.8)'; ctx.fillRect(0, H-70, W, 70);
+    ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif';
+    ctx.fillText(`📍 ${cLat?cLat.toFixed(4):'SIM'} | 🕐 ${new Date().toLocaleTimeString('id-ID')}`, 10, H-45);
+    ctx.fillStyle = '#10b981'; ctx.font = 'bold 16px sans-serif';
+    ctx.fillText(`[AI CHECK: ${state}]`, 10, H-20);
+}
+
+async function runCv(dataUrl, state) {
+    const safe = state.replace('%','');
+    const card = document.getElementById('cvc-'+safe);
+    const ph = document.getElementById('cvp-'+safe);
+    
+    card.classList.add('busy');
+    if(ph) ph.innerHTML = `<div class="spinner" style="border-color:var(--primary); border-top-color:transparent;"></div><div style="color:var(--primary); font-weight:700; margin-top:8px;">AI Sync...</div>`;
+    
+    const parts = document.getElementById('cv-order').value.split('|');
+    const orderId = parts[0], qtyPlan = parseInt(parts[1])||224;
+    
+    document.getElementById('cvr-state').innerHTML = `<span class="badge-status b-transit">${state}</span>`;
+    document.getElementById('cvr-count').innerHTML = `<div class="spinner" style="border-color:var(--text-muted); border-top-color:transparent; width:20px; height:20px;"></div>`;
+    
+    try {
+        const res = await fetch('/api/count_boxes', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({image:dataUrl, state, order_id:orderId, qty_plan:qtyPlan})
+        });
+        const r = await res.json();
+        if(r.error) throw new Error(r.error);
+        
+        cvRes[state] = r;
+        
+        // Update Thumbnail
+        const img = document.createElement('img'); img.src = dataUrl; img.className = 'cv-img';
+        img.style.display = 'block';
+        
+        const bdg = document.createElement('div');
+        bdg.className = 'cv-res-badge ' + (r.anomaly ? 'anom' : 'ok');
+        bdg.innerHTML = `🤖 ${r.count}`;
+        
+        if(ph) ph.replaceWith(img);
+        card.appendChild(bdg);
+        card.className = 'cv-card done';
+        
+        // Update Panel Kanan
+        document.getElementById('cvr-count').innerHTML = `<span style="color:${r.anomaly?'var(--danger)':'var(--success)'}; font-weight:800;">${r.count} Karton</span>`;
+        document.getElementById('cvr-conf').innerHTML = `<span class="badge-status ${r.confidence==='tinggi'?'b-ok':'b-err'}">${r.confidence}</span>`;
+        document.getElementById('cvr-anom').innerHTML = r.anomaly ? '<span class="badge-status b-err">Terdeteksi</span>' : '<span class="badge-status b-ok">Aman</span>';
+        
+        updateCvSum();
+        
+        if(Object.keys(cvRes).length === STATES.length) {
+            document.getElementById('cv-export').disabled = false;
+            attachCvToForm();
+        }
+    } catch(e) {
+        card.className = 'cv-card';
+        if(ph) ph.innerHTML = '<span style="font-size:24px;">❌</span><span style="color:var(--danger);">Fail</span>';
+        document.getElementById('cvr-count').textContent = 'ERR';
+    }
+}
+
+function updateCvSum() {
+    const done = Object.keys(cvRes).length;
+    document.getElementById('cv-done').textContent = done;
+    document.getElementById('cv-pfill').style.width = (done/5*100)+'%';
+    
+    const counts = Object.values(cvRes).map(r => r.count);
+    const max = counts.length ? Math.max(...counts) : 0;
+    document.getElementById('cv-max').textContent = max ? max + ' Box' : '--';
+    
+    document.getElementById('cv-rows').innerHTML = STATES.map(s => {
+        const r = cvRes[s];
+        if(!r) return `<div class="lr"><span class="k">Fase ${s}</span><span class="v" style="color:var(--text-muted); font-weight:500;">Pending</span></div>`;
+        return `<div class="lr"><span class="k">Fase ${s}</span>
+                <span class="v" style="display:flex; gap:6px; align-items:center;">
+                    <span style="color:${r.anomaly?'var(--danger)':'var(--success)'};">${r.count} Box</span>
+                    ${r.anomaly?'<span title="Anomali Terdeteksi" style="font-size:14px;">⚠️</span>':''}
+                </span></div>`;
+    }).join('');
+    
+    const anoms = Object.entries(cvRes).filter(([,r])=>r.anomaly);
+    const aa = document.getElementById('cv-anom-area');
+    if(anoms.length) {
+        aa.innerHTML = `<div style="background:var(--danger-bg); border:1px solid #fecaca; border-radius:8px; padding:12px; margin-top:16px;">
+            <strong style="color:var(--danger); font-size:13px;">⚠️ Peringatan Audit AI:</strong>
+            <ul style="margin-top:6px; padding-left:16px; font-size:12px; color:#991b1b;">
+                ${anoms.map(([s,r])=>`<li>State ${s}: ${r.anomaly_detail || r.notes}</li>`).join('')}
+            </ul>
+        </div>`;
+    } else if(done > 0) {
+         aa.innerHTML = `<div class="gbar gok" style="margin-top:16px; padding:8px 12px;"><span class="gi" style="font-size:16px;">✅</span><div><div class="gt" style="font-size:12px;">Clear Audit</div></div></div>`;
+    } else aa.innerHTML = '';
+}
+
+function attachCvToForm() {
+    document.getElementById('cv-att').style.display = 'block';
+    const max = Math.max(...Object.values(cvRes).map(r=>r.count));
+    document.getElementById('cv-att-detail').innerHTML = `AI mendeteksi nilai puncak <strong>${max} box</strong>.`;
+    document.getElementById('pv-cv').textContent = `Terkunci (${max} box)`;
+    document.getElementById('form-qty').value = max; 
+    chkDiff();
+}
+
+function resetCv() {
+    if(!confirm('Anda yakin ingin mereset seluruh progress AI?')) return;
+    cvRes = {}; cvActive = null;
+    document.getElementById('cv-export').disabled = true;
+    document.getElementById('cv-att').style.display = 'none';
+    initCvGrid();
+}
+
+// ==========================================
+// FORM & DATA SUBMISSION
+// ==========================================
+function swTab(type, el) {
+    formType = type;
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+    el.classList.add('on');
+    document.getElementById('form-tlbl').textContent = `(${type.toUpperCase()})`;
+    document.getElementById('pv-type').innerHTML = `<span class="badge-status ${type==='muat'?'b-muat':'b-selesai'}">${type}</span>`;
+    document.getElementById('form-ok').style.display = 'none';
+    chkDiff();
+}
+
+function chkDiff() {
+    const qty = parseInt(document.getElementById('form-qty').value) || 0;
+    const plan = {'SOPT-001':224, 'SOPT-002':180, 'SOPT-003':312};
+    const ref = plan[document.getElementById('form-order').value] || 0;
+    
+    document.getElementById('pv-qty').textContent = qty + ' Karton';
+    document.getElementById('pv-order').textContent = document.getElementById('form-order').value;
+    
+    const diff = ref - qty;
+    const lbl = document.getElementById('form-diff');
+    if(diff > 0) { lbl.innerHTML = `<span style="color:var(--danger);">⚠️ Defisit ${diff} dari manifest (${ref})</span>`; }
+    else if(diff < 0) { lbl.innerHTML = `<span style="color:var(--accent);">⚠️ Surplus ${Math.abs(diff)} dari manifest (${ref})</span>`; }
+    else { lbl.innerHTML = `<span style="color:var(--success);">✅ Sinkron dengan manifest (${ref})</span>`; }
+}
+
+async function submitForm() {
+    const btn = document.getElementById('form-sub');
+    btn.innerHTML = '<span class="spinner"></span> Transmisi Berjalan...';
+    btn.disabled = true;
+    
+    const body = {
+        order_id: document.getElementById('form-order').value,
+        type: formType,
+        qty: parseInt(document.getElementById('form-qty').value),
+        driver_id: document.getElementById('form-drv').value,
+        driver_name: document.getElementById('form-drvn').value,
+        lat: cLat, lng: cLng,
+        notes: document.getElementById('form-notes').value,
+        warehouse_id: document.getElementById('geo-wh').value, // ambil dari form aktif
+        photo_wm: savedPhoto ? 'attached_encoded' : null,
+        cv_counts: cvRes
+    };
+    
+    try {
+        const r = await fetch('/api/submit_record', {
+            method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
+        });
+        const d = await r.json();
+        if(d.success) {
+            document.getElementById('form-ok').style.display = 'flex';
+            btn.innerHTML = '✅ Segel Berhasil Dibuat';
+            setTimeout(() => { btn.innerHTML = '🔒 Segel Dokumen & Transmisi'; btn.disabled=false; document.getElementById('form-ok').style.display='none'; }, 5000);
+            loadDash(); loadRecs();
+        }
+    } catch(e) {
+        btn.innerHTML = '❌ Gagal Terhubung Server';
+        setTimeout(() => { btn.innerHTML = '🔒 Segel Dokumen & Transmisi'; btn.disabled=false; }, 3000);
+    }
+}
+
+// ==========================================
+// BYOD & MAPS
+// ==========================================
+function initMapByod() {
+    mapByod = L.map('map-byod').setView([-6.2, 107.0], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapByod);
+    
+    Object.values(whs).forEach(w => {
+        L.marker([w.lat, w.lng], {icon:L.divIcon({html:'🏭', iconSize:[24,24], className:''})}).bindPopup(`<b>${w.name}</b>`).addTo(mapByod);
+    });
+    
+    mapByod.on('click', async e => {
+        const [id, nm, ord] = document.getElementById('byod-drv').value.split('|');
+        const spd = document.getElementById('byod-spd').value;
+        document.getElementById('byod-status').innerHTML = `<span class="spinner" style="border-color:var(--success); border-top-color:transparent; width:12px; height:12px;"></span> Memperbarui Satelit...`;
+        
+        await fetch('/api/driver_location', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({driver_id:id, driver_name:nm, order_id:ord, lat:e.latlng.lat, lng:e.latlng.lng, speed:parseInt(spd)})
+        });
+        document.getElementById('byod-status').innerHTML = `✅ Link Established: ${nm} di [${e.latlng.lat.toFixed(3)}, ${e.latlng.lng.toFixed(3)}]`;
+        refreshByod();
+    });
+    
+    document.getElementById('byod-spd').oninput = function() { document.getElementById('byod-spd-lbl').textContent = this.value + ' km/h'; };
+}
+
+async function byodGPS() {
+    if(!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(async pos => {
+        const [id, nm, ord] = document.getElementById('byod-drv').value.split('|');
+        await fetch('/api/driver_location', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({driver_id:id, driver_name:nm, order_id:ord, lat:pos.coords.latitude, lng:pos.coords.longitude, speed:parseInt(document.getElementById('byod-spd').value)})
+        });
+        document.getElementById('byod-status').innerHTML = `✅ GPS Asli Diverifikasi`;
+        refreshByod();
+    });
+}
+
+const CLRS = {'DRV-2041':'#1e40af', 'DRV-1055':'#047857', 'DRV-0877':'#b45309', 'DRV-3012':'#4338ca'};
+async function refreshByod() {
+    try {
+        const r = await fetch('/api/driver_locations'); 
+        const locs = await r.json();
+        const dl = document.getElementById('drv-list'); dl.innerHTML = '';
+        
+        Object.entries(locs).forEach(([id, d]) => {
+            const c = CLRS[id] || '#475569';
+            if(byodMarks[id]) mapByod.removeLayer(byodMarks[id]);
+            
+            byodMarks[id] = L.circleMarker([d.lat, d.lng], {radius:9, color:'#fff', fillColor:c, fillOpacity:1, weight:2})
+                .bindPopup(`<div style="font-family:Inter; font-size:13px;"><b>${d.driver_name}</b><br>ID: ${id}<br>Speed: <b>${d.speed} km/h</b></div>`)
+                .addTo(mapByod);
+                
+            const ini = d.driver_name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+            
+            dl.innerHTML += `
+            <div class="driver-card" onclick="mapByod.setView([${d.lat},${d.lng}],14); byodMarks['${id}'].openPopup();">
+                <div class="driver-avatar" style="color:${c}; background:${c}15; border-color:${c}30;">${ini}</div>
+                <div style="flex:1;">
+                    <div style="font-size:14px; font-weight:700; color:var(--text-dark);">${d.driver_name}</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Doc: <strong>${d.order_id}</strong> · Vel: ${d.speed} km/h</div>
+                </div>
+                <div style="text-align:right;">
+                    <span class="badge-status b-ok">Live</span>
+                </div>
+            </div>`;
+        });
+        if(!Object.keys(locs).length) dl.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">Data armada kosong.</div>';
+    } catch(e) {}
+}
+
+// ==========================================
+// DASHBOARD & RECORDS
+// ==========================================
+async function loadDash() {
+    try {
+        const [oR, rR, lR] = await Promise.all([fetch('/api/orders'), fetch('/api/records'), fetch('/api/driver_locations')]);
+        const orders = await oR.json(), recs = await rR.json(), locs = await lR.json();
+        
+        document.getElementById('d-aktif').textContent = orders.filter(o => o.status==='muat'||o.status==='transit').length;
+        document.getElementById('d-sel').textContent = orders.filter(o => o.status==='selesai').length;
+        document.getElementById('d-klm').textContent = orders.filter(o => o.selisih && o.selisih!==0).length;
+        document.getElementById('d-gps').textContent = Object.values(locs).filter(d => !d.gps_active).length;
+        
+        const sm = {
+            muat:    {cls:'b-muat', lbl:'Loading'},
+            transit: {cls:'b-transit', lbl:'In-Transit'},
+            selesai: {cls:'b-selesai', lbl:'Discharged'}
+        };
+        
+        document.getElementById('dash-orders').innerHTML = orders.map(o => {
+            const st = sm[o.status] || {cls:'b-err', lbl:o.status};
+            const sel = (o.selisih !== null && o.selisih !== undefined) 
+                        ? `<span class="badge-status ${o.selisih!==0?'b-err':'b-ok'}">${o.selisih!==0 ? Math.abs(o.selisih)+' Diff' : 'Match'}</span>` 
+                        : '';
+            return `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); transition:var(--transition); cursor:pointer;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                <div>
+                    <div style="font-size:14px; font-weight:700; color:var(--primary);">${o.id}</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${o.customer} · ${o.driver_name}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                    <span class="badge-status ${st.cls}">${st.lbl}</span>
+                    ${sel}
+                </div>
+            </div>`;
+        }).join('');
+        
+        document.getElementById('dash-recs').innerHTML = recs.slice(-6).reverse().map(r => {
+            const cvN = r.cv_counts && Object.keys(r.cv_counts).length;
+            const bg = r.type==='muat' ? 'var(--accent)' : 'var(--primary)';
+            return `
+            <div style="display:flex; gap:16px; padding:12px 16px; border-bottom:1px dashed var(--border);">
+                <div style="width:36px; height:36px; border-radius:8px; background:${bg}15; color:${bg}; display:flex; align-items:center; justify-content:center; font-size:16px;">
+                    ${r.type==='muat'?'📥':'📤'}
+                </div>
+                <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <strong style="font-size:13px;">${r.order_id}</strong>
+                        <span style="font-size:11px; color:var(--text-muted);">${new Date(r.timestamp).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</span>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-muted);">
+                        ${r.qty} Karton · By: ${r.submitter || r.driver_name}
+                        ${cvN ? `<br><span style="color:var(--success); font-weight:600; font-size:11px; display:inline-block; margin-top:4px;">🤖 AI Verified (${cvN} Lenses)</span>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }).join('') || '<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">Log Kosong</div>';
+        
+    } catch(e) {}
+}
+
+async function loadRecs() {
+    try {
+        const r = await fetch('/api/records'); const recs = await r.json();
+        document.getElementById('recs-tb').innerHTML = recs.reverse().map(r => {
+            const cvN = r.cv_counts ? Object.keys(r.cv_counts).length : 0;
+            const cvMax = cvN ? Math.max(...Object.values(r.cv_counts).map(x=>x.count)) : null;
+            return `
+            <tr>
+                <td><code style="font-size:11px; background:var(--bg-main); padding:4px 6px; border-radius:4px;">${r.id}</code></td>
+                <td style="font-weight:700; color:var(--primary);">${r.order_id}</td>
+                <td><span class="badge-status ${r.type==='muat'?'b-muat':'b-selesai'}">${r.type}</span></td>
+                <td style="font-weight:800; font-size:14px;">${r.qty}</td>
+                <td>${cvMax !== null ? `<span class="badge-status" style="background:#e0f2fe; color:#1e3a8a; border:1px solid #bfdbfe;">🤖 ${cvMax}</span>` : '<span style="color:#94a3b8;">Manual</span>'}</td>
+                <td>${r.submitter || r.driver_name}</td>
+                <td><span class="badge-status ${r.geofence_verified?'b-ok':'b-err'}">${r.geofence_verified?'Valid':'Invalid'}</span></td>
+                <td style="font-family:monospace; color:var(--text-muted);">${r.geofence_distance ? r.geofence_distance+'m' : '--'}</td>
+                <td style="font-size:11px; color:var(--text-muted);">${new Date(r.timestamp).toLocaleString('id-ID')}</td>
+            </tr>`;
+        }).join('') || '<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:30px;">Belum ada aktivitas terekam di Master Database.</td></tr>';
+    } catch(e) {}
+}
+
+// Haversine util
+function hav(a,b,c,d){const R=6371000,dA=(c-a)*Math.PI/180,dB=(d-b)*Math.PI/180,x=Math.sin(dA/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dB/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+
+init();
+</script>
+</body>
+</html>

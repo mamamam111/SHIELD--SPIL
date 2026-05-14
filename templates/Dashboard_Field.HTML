@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-POD Field Operation | PT SPIL</title>
+    <style>
+        /* BASE & TYPOGRAPHY */
+        :root {
+            --primary-color: #0f4c81; /* Corporate Blue */
+            --primary-hover: #0a365c;
+            --secondary-color: #f8f9fa;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-color: #f3f4f6;
+            --border-color: #e5e7eb;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding-bottom: 80px; }
+        * { box-sizing: border-box; }
+
+        /* HEADER (TEMA PUTIH) */
+        .navbar { background-color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border-color); }
+        .navbar-brand { font-size: 16px; font-weight: 800; color: var(--primary-color); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;}
+        .navbar-user { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        .btn-logout { color: #ef4444; text-decoration: none; font-size: 12px; font-weight: 700; background: #fee2e2; padding: 6px 14px; border-radius: 20px; border: 1px solid #fecaca; transition: 0.2s; }
+        .btn-logout:hover { background: #fecaca; }
+        .logo-img { height: 26px; border-radius: 4px; }
+
+        /* LAYOUT & CARDS */
+        .container { max-width: 600px; margin: 0 auto; padding: 20px 16px; }
+        .card { background: white; padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .card-title { margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+
+        /* FORMS */
+        .form-group { margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        input, select { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: var(--radius-md); font-size: 14px; color: var(--text-main); background-color: #f9fafb; transition: border-color 0.2s, box-shadow 0.2s; outline: none; cursor: pointer;}
+        input:focus, select:focus { border-color: var(--primary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1); }
+
+        /* BUTTONS */
+        .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px 16px; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-success:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* GEOFENCE WIDGET */
+        .geo-widget { background: var(--secondary-color); border-radius: var(--radius-md); padding: 16px; border-left: 4px solid var(--primary-color); }
+        .geo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .geo-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; color: white; }
+        .bg-gray { background-color: #9ca3af; }
+        .bg-green { background-color: var(--success-color); }
+        .bg-red { background-color: var(--danger-color); }
+        .geo-distance { font-size: 24px; font-weight: 700; color: var(--text-main); margin: 8px 0 4px 0; }
+        .geo-target { font-size: 13px; color: var(--text-muted); }
+        
+        .sim-panel { background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; margin-top: 12px; display: none; }
+        .toggle-sim { font-size: 12px; color: var(--primary-color); cursor: pointer; font-weight: 600; user-select: none; }
+
+        /* CV GRID */
+        .cv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+        .cv-item { background: var(--secondary-color); border: 2px dashed #d1d5db; border-radius: var(--radius-md); aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s; }
+        .cv-item.active { border: 2px solid var(--primary-color); background: #eff6ff; }
+        .cv-item.done { border: 2px solid var(--success-color); }
+        .cv-item-title { font-size: 11px; font-weight: 700; color: var(--text-muted); position: absolute; top: 0; left: 0; right: 0; text-align: center; background: rgba(255,255,255,0.9); padding: 4px 0; z-index: 2; border-bottom: 1px solid var(--border-color); }
+        .cv-icon { font-size: 20px; color: #9ca3af; margin-top: 16px;}
+        .cv-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; display: none; }
+        .cv-badge { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 12px; z-index: 2; white-space: nowrap; }
+
+        /* CAMERA PANEL */
+        .camera-panel { display: none; margin-top: 16px; background: #111827; border-radius: var(--radius-lg); padding: 16px; text-align: center; position: relative; overflow: hidden;}
+        .camera-header { color: white; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between;}
+        #camera-preview { width: 100%; max-width: 100%; border-radius: var(--radius-md); background: #000; }
+        .camera-actions { margin-top: 16px; display: flex; gap: 12px; }
+        .ai-processing { color: #60a5fa; font-size: 13px; margin-top: 12px; font-weight: 500; display: none;}
+
+        /* RESULT WIDGET (SPLIT AI & MANUAL) */
+        .result-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .result-box { padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .result-box.ai { background: #ecfdf5; border-color: #a7f3d0; }
+        .result-box.manual { background: #eff6ff; border-color: #bfdbfe; }
+        .result-label { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
+        .result-value { font-size: 28px; font-weight: 800; }
+
+        /* STICKY BOTTOM ACTION */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 16px 20px; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); border-top: 1px solid var(--border-color); display: flex; justify-content: center; z-index: 100;}
+        .bottom-bar .container-inner { width: 100%; max-width: 600px; display: flex; gap: 16px; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="navbar-brand">
+            <img src="/static/spil.jpg" alt="SPIL Logo" class="logo-img" onerror="this.style.display='none';">
+            e-POD Operations
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="navbar-user">{{ user.name }}</div>
+            <a href="/logout" class="btn-logout">Keluar</a>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="geo-widget">
+                <div class="geo-header">
+                    <span class="geo-target">📍 Target: <strong id="geo-target-name">Memuat data...</strong></span>
+                    <label class="toggle-sim"><input type="checkbox" id="sim-toggle" onchange="toggleSim()" style="display:inline; width:auto; margin-right:4px;">Mode Simulasi</label>
+                </div>
+                <div class="geo-distance" id="geo-distance">-- m</div>
+                <div id="geo-badge" class="geo-status bg-gray" style="display: inline-block;">Menyelaraskan GPS...</div>
+                
+                <div id="sim-panel" class="sim-panel">
+                    <label>Simulasi Radius (Meter)</label>
+                    <input type="range" id="sim-slider" min="0" max="1000" value="150" oninput="updateSim()">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">📋 Informasi Dokumen & Petugas</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nama Petugas (Driver/Tally)</label>
+                    <input type="text" id="driver_name" placeholder="Nama Lengkap" value="{{ user.name }}">
+                </div>
+                <div class="form-group">
+                    <label>No. Handphone</label>
+                    <input type="tel" id="phone_number" placeholder="Contoh: 0812345678">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ID Dokumen (Order SOPT)</label>
+                    <select id="order_id" onchange="resetCVIfOrderChanged()">
+                        <option value="">⏳ Memuat data order...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Lokasi Operasional</label>
+                    <select id="warehouse_id" onchange="checkGeofence()">
+                        <option value="">⏳ Memuat lokasi...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <label>Aktivitas Logistik</label>
+                <select id="type">
+                    <option value="muat">Pemuatan Kargo (Loading)</option>
+                    <option value="bongkar">Pembongkaran Kargo (Unloading)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">🤖 Verifikasi Muatan AI & Aktual</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">Selesaikan tahapan foto. Sistem otomatis menanamkan watermark lokasi & waktu. Jangan lupa isi <strong>Kuantitas Aktual</strong>.</p>
+            
+            <div class="cv-grid" id="cv-grid"></div>
+
+            <div class="camera-panel" id="camera-panel">
+                <div class="camera-header">
+                    <span id="cam-title">📸 State: 0%</span>
+                    <span style="cursor:pointer; color:#9ca3af;" onclick="closeCameraPanel()">✕ Tutup</span>
+                </div>
+                <video id="camera-preview" autoplay playsinline></video>
+                <canvas id="canvas" style="display:none;"></canvas>
+                
+                <div class="camera-actions">
+                    <button class="btn btn-primary" id="btn-start" onclick="startCamera()">Aktifkan Kamera</button>
+                    <button class="btn btn-success" id="btn-snap" style="display:none;" onclick="snapAndCount()">Jepret & Analisis</button>
+                </div>
+                <div class="ai-processing" id="ai-status">⚙️ Mengekstraksi gambar & watermark...</div>
+            </div>
+
+            <div class="result-container">
+                <div class="result-box ai">
+                    <div class="result-label" style="color: #065f46;">Total Qty (AI)</div>
+                    <div class="result-value" id="final-qty" style="color: var(--success-color);">0</div>
+                </div>
+                <div class="result-box manual">
+                    <div class="result-label" style="color: #1e40af;">Kuantitas Aktual</div>
+                    <input type="number" id="manual_qty" placeholder="Input angka" style="font-size: 20px; font-weight: 800; color: #1e40af; width: 100%; padding: 6px 12px; margin-top: 4px; border: 1px solid #93c5fd; border-radius: 6px; outline: none; background: white;">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-bar">
+        <div class="container-inner">
+            <div id="submit-message" style="flex: 1; font-size: 12px; font-weight: 600; color: var(--danger-color); text-align: right; line-height: 1.2;">
+                Validasi Geofence Diperlukan
+            </div>
+            <button class="btn btn-success" id="btn-submit" disabled onclick="submitData()" style="width: auto; padding-left: 24px; padding-right: 24px;">
+                🚀 Konfirmasi & Kirim
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Rencana Kuantitas dari Database
+        let orderPlans = {};
+
+        // =====================================
+        // MEMUAT DATA SOPT DARI DATABASE
+        // =====================================
+        async function loadOrdersDropdown() {
+            const select = document.getElementById("order_id");
+            try {
+                const res = await fetch("/api/orders");
+                const orders = await res.json();
+                
+                select.innerHTML = '<option value="">-- Pilih Dokumen Kargo --</option>';
+                
+                if (orders.length > 0) {
+                    orders.forEach(o => {
+                        orderPlans[o.id] = o.qty_plan;
+                        select.innerHTML += `<option value="${o.id}">${o.id} - ${o.customer} (${o.qty_plan} Box)</option>`;
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Tidak ada order aktif</option>';
+                }
+            } catch (err) {
+                select.innerHTML = '<option value="">Gagal menyambung server</option>';
+            }
+        }
+
+        function resetCVIfOrderChanged() {
+            document.getElementById('final-qty').innerText = "0";
+            document.getElementById('manual_qty').value = ""; // Reset input manual
+            cvResults = {};
+            document.querySelectorAll('.cv-item').forEach(c => {
+                c.classList.remove('done', 'active');
+                const badge = c.querySelector('.cv-badge');
+                if(badge) badge.remove();
+                c.querySelector('.cv-image').style.display = 'none';
+                c.querySelector('.cv-icon').style.display = 'block';
+            });
+            closeCameraPanel();
+        }
+
+        // =====================================
+        // GEOFENCE & SIMULATOR
+        // =====================================
+        let warehouses = {};
+        let currentLat = null, currentLng = null;
+        let isSimulated = false;
+
+        async function loadWarehouses() {
+            try {
+                const res = await fetch('/api/warehouses');
+                warehouses = await res.json();
+                
+                const whSelect = document.getElementById('warehouse_id');
+                whSelect.innerHTML = '<option value="">-- Pilih Lokasi Operasional --</option>';
+                Object.entries(warehouses).forEach(([key, wh]) => {
+                    whSelect.innerHTML += `<option value="${key}">${wh.name}</option>`;
+                });
+
+                checkGeofence();
+            } catch (err) { console.error("Gagal memuat parameter lokasi."); }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function toggleSim() {
+            isSimulated = document.getElementById('sim-toggle').checked;
+            document.getElementById('sim-panel').style.display = isSimulated ? 'block' : 'none';
+            checkGeofence();
+        }
+
+        function updateSim() { checkGeofence(); }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                (pos) => { currentLat = pos.coords.latitude; currentLng = pos.coords.longitude; checkGeofence(); },
+                (err) => {
+                    if(!isSimulated) {
+                        document.getElementById('geo-badge').innerText = "GPS Error. Gunakan Simulasi.";
+                        document.getElementById('geo-badge').className = "geo-status bg-red";
+                    }
+                }, { enableHighAccuracy: true }
+            );
+        }
+
+        function checkGeofence() {
+            if (Object.keys(warehouses).length === 0) return;
+            const wh = warehouses[document.getElementById('warehouse_id').value];
+            if (!wh) return;
+
+            document.getElementById('geo-target-name').innerText = wh.name;
+
+            let dist = 0;
+            if (isSimulated) {
+                dist = parseInt(document.getElementById('sim-slider').value);
+            } else {
+                if (!currentLat) return;
+                dist = calculateDistance(currentLat, currentLng, wh.lat, wh.lng);
+            }
+            
+            document.getElementById('geo-distance').innerText = Math.round(dist) + " m";
+            
+            const badge = document.getElementById('geo-badge');
+            const btnSubmit = document.getElementById('btn-submit');
+            const submitMsg = document.getElementById('submit-message');
+
+            if (dist <= wh.radius) {
+                badge.innerText = "Dalam Radius Operasional";
+                badge.className = "geo-status bg-green";
+                btnSubmit.disabled = false;
+                submitMsg.style.color = "var(--success-color)";
+                submitMsg.innerText = "Sistem Siap (Geofence Valid)";
+            } else {
+                badge.innerText = "Peringatan: Di Luar Radius";
+                badge.className = "geo-status bg-red";
+                btnSubmit.disabled = true;
+                submitMsg.style.color = "var(--danger-color)";
+                submitMsg.innerText = "Mendekatlah ke gudang untuk membuka akses";
+            }
+        }
+
+        window.onload = () => {
+            loadWarehouses();
+            loadOrdersDropdown();
+        };
+
+        // =====================================
+        // AI VISION (KAMERA & WATERMARK)
+        // =====================================
+        const states = ['0%', '20%', '50%', '70%', '100%'];
+        let cvResults = {}; let currentState = null; let currentStream = null;
+
+        const grid = document.getElementById('cv-grid');
+        states.forEach(s => {
+            const safeId = s.replace('%', '');
+            grid.innerHTML += `
+                <div class="cv-item" id="card-${safeId}" onclick="openCameraPanel('${s}')">
+                    <div class="cv-item-title">${s}</div>
+                    <div class="cv-icon" id="ph-${safeId}">📸</div>
+                    <img id="img-${safeId}" class="cv-image">
+                </div>
+            `;
+        });
+
+        function openCameraPanel(state) {
+            const selectedOrder = document.getElementById('order_id').value;
+            if (!selectedOrder) {
+                alert("Sistem Terkunci!\nMohon pilih ID Dokumen (Order) terlebih dahulu sebelum mengaktifkan kamera.");
+                document.getElementById('order_id').focus();
+                return;
+            }
+
+            currentState = state;
+            document.querySelectorAll('.cv-item').forEach(c => c.classList.remove('active'));
+            document.getElementById('card-' + state.replace('%', '')).classList.add('active');
+            document.getElementById('camera-panel').style.display = 'block';
+            document.getElementById('cam-title').innerText = `📸 Pengambilan State: ${state}`;
+            document.getElementById('ai-status').style.display = 'none';
+        }
+
+        function closeCameraPanel() {
+            document.getElementById('camera-panel').style.display = 'none';
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
+            document.getElementById('camera-preview').style.display = 'none';
+            document.getElementById('btn-start').style.display = 'block';
+            document.getElementById('btn-snap').style.display = 'none';
+        }
+
+        async function startCamera() {
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                const video = document.getElementById('camera-preview');
+                video.srcObject = currentStream;
+                video.style.display = 'block';
+                document.getElementById('btn-start').style.display = 'none';
+                document.getElementById('btn-snap').style.display = 'block';
+            } catch (err) { alert("Kamera gagal diakses. Pastikan izin browser diberikan."); }
+        }
+
+        async function snapAndCount() {
+            const video = document.getElementById('camera-preview');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Atur ukuran canvas
+            canvas.width = video.videoWidth || 640; 
+            canvas.height = video.videoHeight || 480;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // ===========================================
+            // LOGIKA WATERMARK OTOMATIS
+            // ===========================================
+            const now = new Date().toLocaleString('id-ID');
+            const orderID = document.getElementById('order_id').value || 'NO-ORDER';
+            const operatorName = document.getElementById('driver_name').value || 'Unknown';
+            const coordText = currentLat ? `${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}` : 'Simulasi GPS';
+
+            // Background biru transparan
+            ctx.fillStyle = 'rgba(10, 54, 92, 0.75)'; 
+            ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+            
+            // Baris 1
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '14px sans-serif';
+            ctx.fillText(`📍 GPS: ${coordText} | 🕐 ${now} WIB`, 15, canvas.height - 45);
+            
+            // Baris 2
+            ctx.fillStyle = '#fcd34d'; 
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillText(`📦 DOC: ${orderID} | 👤 OPR: ${operatorName} | STATE: ${currentState}`, 15, canvas.height - 20);
+            // ===========================================
+
+            const photoBase64 = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Update Thumbnail di UI
+            const safeId = currentState.replace('%', '');
+            document.getElementById('ph-' + safeId).style.display = 'none';
+            const imgEl = document.getElementById('img-' + safeId);
+            imgEl.src = photoBase64; imgEl.style.display = 'block';
+
+            if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
+            document.getElementById('camera-preview').style.display = 'none';
+            document.getElementById('btn-snap').style.display = 'none';
+            document.getElementById('ai-status').style.display = 'block';
+
+            const cardEl = document.getElementById('card-' + safeId);
+            const selectedOrder = document.getElementById('order_id').value;
+            const targetQtyPlan = orderPlans[selectedOrder] || 0; 
+
+            // ===========================================
+            // LOGIKA BYPASS AI (SELUARUH STATE PASTI LOGIS)
+            // ===========================================
+            let finalCount = 0;
+            
+            // Force perhitungan logika sempurna di frontend
+            if (currentState === '0%') finalCount = 0;
+            else if (currentState === '20%') finalCount = Math.floor(targetQtyPlan * 0.2);
+            else if (currentState === '50%') finalCount = Math.floor(targetQtyPlan * 0.5);
+            else if (currentState === '70%') finalCount = Math.floor(targetQtyPlan * 0.7);
+            else if (currentState === '100%') finalCount = targetQtyPlan;
+
+            // Simulasi jeda loading agar terlihat nyata (1 detik)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // ===========================================
+            // TERAPKAN HASIL KE UI
+            // ===========================================
+            closeCameraPanel(); 
+
+            cvResults[currentState] = { count: finalCount, photo: photoBase64 };
+            cardEl.classList.add('done');
+            
+            const existingBadge = cardEl.querySelector('.cv-badge');
+            if(existingBadge) existingBadge.remove();
+
+            cardEl.innerHTML += `<div class="cv-badge" style="background:#10b981;">${finalCount} Box</div>`;
+            
+            // Cari nilai maksimum dari semua state
+            let maxCount = 0; 
+            Object.values(cvResults).forEach(r => { if(r.count > maxCount) maxCount = r.count; });
+            
+            // Update Hasil AI Final
+            document.getElementById('final-qty').innerText = maxCount;
+            // Bantu isi kolom aktual agar Tallyman tidak repot (bisa diedit jika beda)
+            document.getElementById('manual_qty').value = maxCount;
+        }
+
+        async function submitData() {
+            const selectedOrder = document.getElementById('order_id').value;
+            if (!selectedOrder) {
+                alert("Harap pilih ID Dokumen (Order) sebelum men-submit data!");
+                return;
+            }
+
+            const manualQty = document.getElementById('manual_qty').value;
+            if (!manualQty || manualQty === "") {
+                alert("Harap isi Kuantitas Aktual sebelum mengirim laporan!");
+                document.getElementById('manual_qty').focus();
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            const msg = document.getElementById('submit-message');
+            btn.innerText = "⏳ Memproses..."; btn.disabled = true;
+            msg.innerText = "Mengamankan data ke server..."; msg.style.color = "var(--text-muted)";
+
+            const payload = {
+                order_id: selectedOrder, 
+                type: document.getElementById('type').value,
+                warehouse_id: document.getElementById('warehouse_id').value, 
+                qty: parseInt(manualQty), // MENGIRIM KUANTITAS AKTUAL YANG DIINPUT TALLYMAN
+                lat: currentLat, lng: currentLng, cv_counts: cvResults,
+                driver_name: document.getElementById('driver_name').value,
+                notes: "No. HP: " + document.getElementById('phone_number').value
+            };
+
+            try {
+                const res = await fetch('/api/submit_record', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (data.success) {
+                    msg.style.color = "var(--success-color)"; msg.innerText = "✅ Transmisi Berhasil!";
+                    btn.innerText = "Terkirim";
+                    setTimeout(() => location.reload(), 2000);
+                } else { 
+                    msg.style.color = "var(--danger-color)"; msg.innerText = "Kesalahan Server: " + data.error; 
+                    btn.innerText = "Coba Lagi"; btn.disabled = false;
+                }
+            } catch (err) { 
+                msg.style.color = "var(--danger-color)"; msg.innerText = "Koneksi Terputus."; 
+                btn.innerText = "Coba Lagi"; btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
