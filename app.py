@@ -9,11 +9,18 @@ app.secret_key = "rahasia_spil_super_aman"
 # ==========================================
 # FILE SYSTEM INITIALIZATION
 # ==========================================
-DATA_FILE = "data/records.json"
-LOCS_FILE = "data/driver_locs.json"
-os.makedirs("data", exist_ok=True)
-if not os.path.exists(DATA_FILE): json.dump([], open(DATA_FILE, "w"))
-if not os.path.exists(LOCS_FILE): json.dump({}, open(LOCS_FILE, "w"))
+# Vercel butuh folder /tmp buat nulis file sementara
+DATA_FILE = "/tmp/records.json"
+LOCS_FILE = "/tmp/driver_locs.json"
+
+# Inisialisasi file kalau belum ada
+if not os.path.exists(DATA_FILE):
+    with open(DATA_FILE, "w") as f:
+        json.dump([], f)
+if not os.path.exists(LOCS_FILE):
+    with open(LOCS_FILE, "w") as f:
+        json.dump({}, f)
+
 
 # ==========================================
 # MASTER DATA (WAREHOUSES, ORDERS, USERS)
