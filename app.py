@@ -5,9 +5,7 @@ import json, os, uuid, math, requests
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import base64
-import cv2
-import numpy as np
-from ultralytics import YOLO
+
 
 # ==========================================
 # 1. INISIALISASI MODEL YOLOv11
