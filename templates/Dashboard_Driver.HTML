@@ -540,7 +540,6 @@
                 const orders = await res.json();
                 
                 // Cari order khusus yang di-assign ke driver ini (Budi Santoso / DRV-2041)
-                // Di server master data, Budi memegang akun 'drv1' dengan driver_id 'DRV-2041'
                 activeOrder = orders.find(o => o.driver === driverId || o.driver_id === driverId);
 
                 if (activeOrder) {
@@ -555,7 +554,7 @@
                     document.getElementById('task-origin-name').innerText = "Gudang " + (routeSplit[0] || activeOrder.warehouse_origin).trim();
                     document.getElementById('task-dest-name').innerText = "Pelabuhan " + (routeSplit[1] || activeOrder.warehouse_dest).trim();
                     
-                    // Sesuaikan tombol berdasarkan status jalan lokals
+                    // Sesuaikan tombol berdasarkan status jalan lokal
                     const localStatus = localStorage.getItem('trip_status_' + activeOrder.id);
                     if (localStatus === 'dalam_perjalanan') {
                         setUiToInTransit();
@@ -596,26 +595,28 @@
                     setUiToInTransit();
                     alert("🚀 Status terupdate: Perjalanan dimulai! Tetap patuhi rambu K3 & batas kecepatan.");
                 }
-            }} else if (action === 'tiba') {
+            } else if (action === 'tiba') {
                 if (confirm("Konfirmasi Tiba: Apakah truk Anda sudah terparkir aman di pelabuhan tujuan?")) {
+                    
+                    // Menonaktifkan tombol & ubah teks agar driver tahu sistem sedang memproses
                     document.getElementById('btn-end-trip').disabled = true;
                     document.getElementById('btn-end-trip').innerText = "⏳ Mengirim Laporan...";
                     
                     const payload = {
                         order_id: activeOrder.id,
-                        type: "bongkar", 
+                        type: "bongkar", // Trigger mode bongkar di tujuan
                         warehouse_id: activeOrder.warehouse_dest,
-                        qty: activeOrder.qty_plan,
+                        qty: activeOrder.qty_plan, // Estimasi awal disamakan plan
                         notes: "DRIVER CHECK-IN TIBA. Catatan: " + notesValue
                     };
                     
-                    // Fungsi untuk mengembalikan tombol jika terjadi error
+                    // Fungsi reset UI jika proses gagal di tengah jalan
                     const resetBtn = () => {
                         document.getElementById('btn-end-trip').disabled = false;
                         document.getElementById('btn-end-trip').innerText = "🏁 Saya Sudah Tiba di Tujuan (Check-In)";
                     };
 
-                    // Parameter 1: Callback Sukses | Parameter 2: Callback Error
+                    // Backup Koordinat Saat Ini Sekaligus Mengirim Data ke Server
                     navigator.geolocation.getCurrentPosition(
                         async (p) => {
                             payload.lat = p.coords.latitude;
@@ -627,30 +628,33 @@
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(payload)
                                 });
+                                
                                 const result = await res.json();
                                 
                                 if (result.success) {
                                     localStorage.removeItem('trip_status_' + activeOrder.id);
                                     alert("Anda berhasil melakukan Check-In.");
-                                    location.reload();
+                                    location.reload(); // Refresh setelah sukses
                                 } else {
-                                    alert("Gagal Check-In dari server: " + (result.error || "Akses ditolak"));
+                                    alert("Gagal Check-In: " + (result.error || "Akses ditolak oleh Server"));
                                     resetBtn();
                                 }
                             } catch (e) {
-                                alert("Gagal mengirim data check-in. Periksa jaringan internet.");
+                                alert("Gagal mengirim data check-in. Periksa jaringan internet Anda.");
                                 resetBtn();
                             }
-                        }, 
+                        },
                         (err) => {
-                            // Menangkap error jika GPS tiba-tiba mati / ditolak
-                            alert("Sistem gagal membaca lokasi akhir Anda. Pastikan GPS HP tetap menyala untuk Check-In!");
+                            // Menangkap error jika GPS dimatikan di tengah jalan oleh Driver
+                            alert("Sistem gagal membaca lokasi akhir Anda. Pastikan GPS HP tetap menyala untuk melakukan Check-In!");
                             resetBtn();
                         },
                         { enableHighAccuracy: true, timeout: 15000 }
                     );
                 }
             }
+        }
+
         // Trigger inisialisasi sistem saat halaman terbuka
         window.onload = () => {
             loadDriverTask();
