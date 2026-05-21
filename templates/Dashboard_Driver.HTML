@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-POD Driver Dashboard | PT SPIL</title>
+    <style>
+        /* BASE & TYPOGRAPHY */
+        :root {
+            --primary-color: #0f4c81; /* Corporate Blue SPIL */
+            --primary-hover: #0a365c;
+            --secondary-color: #f8f9fa;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --bg-color: #f3f4f6;
+            --border-color: #e5e7eb;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 100px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar-brand {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary-color);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .navbar-user {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .btn-logout {
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            background: #fee2e2;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #fecaca;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #fecaca;
+        }
+
+        /* CONTAINER & CARDS */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        /* GPS MANDATORY LOCK WIDGET */
+        .gps-widget {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-left: 5px solid var(--danger-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .gps-widget.active {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            border-left-color: var(--success-color);
+        }
+
+        .gps-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gps-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #991b1b;
+        }
+
+        .gps-widget.active .gps-title {
+            color: #166534;
+        }
+
+        .gps-status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            color: white;
+            background-color: var(--danger-color);
+            text-transform: uppercase;
+        }
+
+        .gps-widget.active .gps-status-badge {
+            background-color: var(--success-color);
+        }
+
+        .gps-desc {
+            font-size: 12px;
+            color: #7f1d1d;
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+
+        .gps-widget.active .gps-desc {
+            color: #14532d;
+        }
+
+        /* ROUTE & TASK DETAILS */
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+
+        .order-id {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: #eff6ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .status-trip {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--warning-color);
+        }
+
+        .route-timeline {
+            position: relative;
+            padding-left: 24px;
+            margin: 16px 0;
+        }
+
+        .route-timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: dashed #d1d5db;
+        }
+
+        .timeline-node {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-node:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-node::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid #9ca3af;
+        }
+
+        .timeline-node.origin::before {
+            border-color: var(--primary-color);
+        }
+
+        .timeline-node.destination::before {
+            border-color: var(--success-color);
+        }
+
+        .node-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .node-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 2px;
+        }
+
+        .node-detail {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* INFO GRID */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: var(--secondary-color);
+            padding: 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .info-item label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            display: block;
+        }
+
+        .info-item span {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* TEXTAREA & INPUTS */
+        .form-group {
+            margin-top: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            background-color: #f9fafb;
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1);
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background-color: #059669;
+        }
+
+        .btn:disabled {
+            background-color: #d1d5db !important;
+            color: #9ca3af !important;
+            cursor: not-allowed;
+            border-color: #e5e7eb;
+        }
+
+        /* BLUR LAYER IF LOCKED */
+        .lock-overlay {
+            position: relative;
+        }
+
+        .lock-overlay.locked::after {
+            content: '⚠️ Aktifkan GPS untuk Membuka Informasi Tugas';
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #b91c1c;
+            border-radius: var(--radius-lg);
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="navbar-brand">
+            <span style="font-size: 20px;">🚚</span> e-POD Driver Portal
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="navbar-user" id="driver-profile-name">{{ user.name }}</div>
+            <a href="/logout" class="btn-logout">Keluar</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- STATUS GPS MANDATORI WIDGET -->
+        <div class="card gps-widget" id="gps-card">
+            <div class="gps-header">
+                <span class="gps-title" id="gps-title">🔒 GPS Terkunci</span>
+                <span class="gps-status-badge" id="gps-badge">Mati</span>
+            </div>
+            <p class="gps-desc" id="gps-desc">
+                Sesuai regulasi K3 & SOP PT SPIL, Anda <b>wajib mengaktifkan izin lokasi/GPS</b> pada perangkat HP untuk melihat penugasan rute dan memulai perjalanan.
+            </p>
+        </div>
+
+        <!-- BLUR / INTERACTIVE TASK PANEL -->
+        <div class="lock-overlay locked" id="task-panel">
+            
+            <!-- CARD PENUGASAN AKTIF -->
+            <div class="card">
+                <div class="task-header">
+                    <span class="order-id" id="task-order-id">SOPT-001</span>
+                    <span class="status-trip" id="task-trip-status">Belum Mulai</span>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Pelanggan / Customer</label>
+                        <span id="task-customer">Unilever Cibitung</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Ukuran Kontainer</label>
+                        <span id="task-container">40ft Heavy Duty</span>
+                    </div>
+                </div>
+
+                <!-- ALUR RUTE JALUR TIMELINE -->
+                <div class="route-timeline">
+                    <div class="timeline-node origin">
+                        <div class="node-label">📍 Titik Ambil Barang (Origin)</div>
+                        <div class="node-name" id="task-origin-name">Gudang Unilever Cibitung</div>
+                        <div class="node-detail">Status: Tallyman Bersiap</div>
+                    </div>
+                    <div class="timeline-node destination">
+                        <div class="node-label">🏁 Titik Bongkar / Tujuan (Destination)</div>
+                        <div class="node-name" id="task-dest-name">Pelabuhan Tanjung Priok</div>
+                        <div class="node-detail">Rute: Tol Jakarta - Cikampek</div>
+                    </div>
+                </div>
+
+                <div class="info-grid" style="margin-top: 10px; background: #fffbeb; border-color: #fef3c7;">
+                    <div class="info-item" style="grid-column: span 2;">
+                        <label style="color: #b45309;">📋 Rencana Kuantitas Muat</label>
+                        <span id="task-qty-plan" style="color: #b45309; font-size: 16px;">224 Box</span>
+                    </div>
+                </div>
+
+                <!-- CATATAN DRIVER -->
+                <div class="form-group">
+                    <label>📝 Catatan Driver (Kendala / Kondisi Jalan)</label>
+                    <textarea id="driver-notes" rows="2" placeholder="Contoh: Tol macet parah di KM 14 / Ban kiri agak kurang angin..."></textarea>
+                </div>
+            </div>
+
+            <!-- TOMBOL AKSI UTAMA DRIVER -->
+            <div style="margin-top: 16px;">
+                <button class="btn btn-primary" id="btn-start-trip" onclick="updateTripProgress('jalan')">
+                    🚀 Mulai Perjalanan (Check-Out Origin)
+                </button>
+                <button class="btn btn-success" id="btn-end-trip" onclick="updateTripProgress('tiba')" style="display: none; margin-top: 10px;">
+                    🏁 Saya Sudah Tiba di Tujuan (Check-In)
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Data internal simulasi untuk Driver ID (Dihubungkan ke Flask session)
+        const driverId = "{{ user.driver_id }}"; // Contoh: DRV-2041
+        let activeOrder = null;
+        let gpsWatchId = null;
+
+        // ==========================================
+        // 1. CEK & WAJIBKAN AKSES GPS (REAL-TIME)
+        // ==========================================
+        function initGpsValidation() {
+            if (navigator.geolocation) {
+                // Memantau pergerakan GPS secara kontinu
+                gpsWatchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        handleGpsSuccess(position.coords.latitude, position.coords.longitude, position.coords.speed);
+                    },
+                    (error) => {
+                        handleGpsError();
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                alert("Perangkat Anda tidak mendukung fitur GPS!");
+                handleGpsError();
+            }
+        }
+
+        function handleGpsSuccess(lat, lng, speed) {
+            // Update Widget UI GPS Aktif
+            const gpsCard = document.getElementById('gps-card');
+            document.getElementById('gps-title').innerText = "GPS Aktif Termonitor";
+            document.getElementById('gps-badge').innerText = "Aktif";
+            document.getElementById('gps-desc').innerText = `Lokasi Anda berhasil diverifikasi secara real-time (${lat.toFixed(5)}, ${lng.toFixed(5)}). Penugasan dibuka.`;
+            gpsCard.className = "card gps-widget active";
+
+            // Buka Kunci Panel Informasi Tugas
+            document.getElementById('task-panel').classList.remove('locked');
+
+            // Kirim koordinat otomatis ke server (Fitur Live Radar Pusat Monitoring)
+            sendLocationToServer(lat, lng, speed);
+        }
+
+        function handleGpsError() {
+            const gpsCard = document.getElementById('gps-card');
+            document.getElementById('gps-title').innerText = "GPS Terkunci / Mati";
+            document.getElementById('gps-badge').innerText = "Mati";
+            document.getElementById('gps-desc').innerText = "Sistem mendeteksi GPS mati atau izin lokasi ditolak. Segera aktifkan GPS di pengaturan HP Anda untuk memproses dokumen.";
+            gpsCard.className = "card gps-widget";
+
+            // Kunci kembali panel informasi tugas jika GPS mati tengah jalan
+            document.getElementById('task-panel').classList.add('locked');
+        }
+
+        // Fungsi AJAX mengirim koordinat ke app.py radar endpoint
+        async function sendLocationToServer(lat, lng, speed) {
+            if (!activeOrder) return;
+            try {
+                await fetch('/api/driver_location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        driver_id: driverId,
+                        driver_name: document.getElementById('driver-profile-name').innerText,
+                        order_id: activeOrder.id,
+                        lat: lat,
+                        lng: lng,
+                        speed: speed ? Math.round(speed * 3.6) : 0 // Konversi m/s ke km/jam
+                    })
+                });
+            } catch (err) {
+                console.error("Gagal melakukan sinkronisasi radar GPS ke server pusat.");
+            }
+        }
+
+        // ==========================================
+        // 2. AMBIL DATA ROUTE ASSIGNMENT DARI SERVER
+        // ==========================================
+        async function loadDriverTask() {
+            try {
+                const res = await fetch('/api/orders');
+                const orders = await res.json();
+                
+                // Cari order khusus yang di-assign ke driver ini (Budi Santoso / DRV-2041)
+                // Di server master data, Budi memegang akun 'drv1' dengan driver_id 'DRV-2041'
+                activeOrder = orders.find(o => o.driver === driverId || o.driver_id === driverId);
+
+                if (activeOrder) {
+                    // Suntik data dari Flask API ke elemen HTML UI
+                    document.getElementById('task-order-id').innerText = activeOrder.id;
+                    document.getElementById('task-customer').innerText = activeOrder.customer;
+                    document.getElementById('task-qty-plan').innerText = activeOrder.qty_plan + " Box";
+                    document.getElementById('task-container').innerText = `${activeOrder.container || '40ft'} Standard Cargo`;
+                    
+                    // Format rute teks estetis
+                    const routeSplit = activeOrder.route.split('→');
+                    document.getElementById('task-origin-name').innerText = "Gudang " + (routeSplit[0] || activeOrder.warehouse_origin).trim();
+                    document.getElementById('task-dest-name').innerText = "Pelabuhan " + (routeSplit[1] || activeOrder.warehouse_dest).trim();
+                    
+                    // Sesuaikan tombol berdasarkan status jalan lokals
+                    const localStatus = localStorage.getItem('trip_status_' + activeOrder.id);
+                    if (localStatus === 'dalam_perjalanan') {
+                        setUiToInTransit();
+                    }
+                } else {
+                    document.getElementById('task-order-id').innerText = "KOSONG";
+                    document.getElementById('task-panel').innerHTML = `
+                        <div class="card" style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+                            <span style="font-size: 48px; display:block; margin-bottom:12px;">📭</span>
+                            <b>Tidak Ada Tugas Hari Ini</b><br>
+                            Anda belum di-assign ke rute manapun oleh tim monitoring pusat.
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error("Gagal memuat tugas operasional sopir.");
+            }
+        }
+
+        // ==========================================
+        // 3. UPDATE PROGRESS PERJALANAN (CHECK-OUT/IN)
+        // ==========================================
+        function setUiToInTransit() {
+            document.getElementById('task-trip-status').innerText = "Dalam Perjalanan";
+            document.getElementById('task-trip-status').style.color = "var(--primary-color)";
+            document.getElementById('btn-start-trip').style.display = "none";
+            document.getElementById('btn-end-trip').style.display = "block";
+        }
+
+        async function updateTripProgress(action) {
+            if (!activeOrder) return;
+            
+            const notesValue = document.getElementById('driver-notes').value;
+            
+            if (action === 'jalan') {
+                if (confirm("Konfirmasi Check-Out: Apakah Anda siap memulai rute pengiriman kargo ini?")) {
+                    localStorage.setItem('trip_status_' + activeOrder.id, 'dalam_perjalanan');
+                    setUiToInTransit();
+                    alert("🚀 Status terupdate: Perjalanan dimulai! Tetap patuhi rambu K3 & batas kecepatan.");
+                }
+            } else if (action === 'tiba') {
+                if (confirm("Konfirmasi Tiba: Apakah truk Anda sudah terparkir aman di pelabuhan tujuan?")) {
+                    localStorage.removeItem('trip_status_' + activeOrder.id);
+                    document.getElementById('btn-end-trip').disabled = true;
+                    document.getElementById('btn-end-trip').innerText = "⏳ Mengirim Laporan...";
+                    
+                    // Trigger pengiriman record otomatis untuk update dashboard monitor & Tallyman pembongkaran
+                    const payload = {
+                        order_id: activeOrder.id,
+                        type: "bongkar", // Trigger mode bongkar di tujuan
+                        warehouse_id: activeOrder.warehouse_dest,
+                        qty: activeOrder.qty_plan, // Estimasi awal disamakan plan
+                        notes: "DRIVER CHECK-IN TIBA. Catatan: " + notesValue
+                    };
+                    
+                    try {
+                        // Geolocation backup untuk submit data akhir
+                        navigator.geolocation.getCurrentPosition(async (p) => {
+                            payload.lat = p.coords.latitude;
+                            payload.lng = p.coords.longitude;
+                            
+                            const res = await fetch('/api/submit_record', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            const result = await res.json();
+                            if (result.success) {
+                                alert("Anda berhasil melakukan Check-In.");
+                                location.reload();
+                            }
+                        });
+                    } catch (e) {
+                        alert("Gagal mengirim data check-in. Periksa jaringan internet.");
+                        document.getElementById('btn-end-trip').disabled = false;
+                        document.getElementById('btn-end-trip').innerText = "🏁 Saya Sudah Tiba di Tujuan (Check-In)";
+                    }
+                }
+            }
+        }
+
+        // Trigger inisialisasi sistem saat halaman terbuka
+        window.onload = () => {
+            loadDriverTask();
+            initGpsValidation();
+        };
+    </script>
+</body>
+
+</html>
