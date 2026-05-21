@@ -596,47 +596,61 @@
                     setUiToInTransit();
                     alert("🚀 Status terupdate: Perjalanan dimulai! Tetap patuhi rambu K3 & batas kecepatan.");
                 }
-            } else if (action === 'tiba') {
+            }} else if (action === 'tiba') {
                 if (confirm("Konfirmasi Tiba: Apakah truk Anda sudah terparkir aman di pelabuhan tujuan?")) {
-                    localStorage.removeItem('trip_status_' + activeOrder.id);
                     document.getElementById('btn-end-trip').disabled = true;
                     document.getElementById('btn-end-trip').innerText = "⏳ Mengirim Laporan...";
                     
-                    // Trigger pengiriman record otomatis untuk update dashboard monitor & Tallyman pembongkaran
                     const payload = {
                         order_id: activeOrder.id,
-                        type: "bongkar", // Trigger mode bongkar di tujuan
+                        type: "bongkar", 
                         warehouse_id: activeOrder.warehouse_dest,
-                        qty: activeOrder.qty_plan, // Estimasi awal disamakan plan
+                        qty: activeOrder.qty_plan,
                         notes: "DRIVER CHECK-IN TIBA. Catatan: " + notesValue
                     };
                     
-                    try {
-                        // Geolocation backup untuk submit data akhir
-                        navigator.geolocation.getCurrentPosition(async (p) => {
+                    // Fungsi untuk mengembalikan tombol jika terjadi error
+                    const resetBtn = () => {
+                        document.getElementById('btn-end-trip').disabled = false;
+                        document.getElementById('btn-end-trip').innerText = "🏁 Saya Sudah Tiba di Tujuan (Check-In)";
+                    };
+
+                    // Parameter 1: Callback Sukses | Parameter 2: Callback Error
+                    navigator.geolocation.getCurrentPosition(
+                        async (p) => {
                             payload.lat = p.coords.latitude;
                             payload.lng = p.coords.longitude;
                             
-                            const res = await fetch('/api/submit_record', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
-                            const result = await res.json();
-                            if (result.success) {
-                                alert("Anda berhasil melakukan Check-In.");
-                                location.reload();
+                            try {
+                                const res = await fetch('/api/submit_record', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                const result = await res.json();
+                                
+                                if (result.success) {
+                                    localStorage.removeItem('trip_status_' + activeOrder.id);
+                                    alert("Anda berhasil melakukan Check-In.");
+                                    location.reload();
+                                } else {
+                                    alert("Gagal Check-In dari server: " + (result.error || "Akses ditolak"));
+                                    resetBtn();
+                                }
+                            } catch (e) {
+                                alert("Gagal mengirim data check-in. Periksa jaringan internet.");
+                                resetBtn();
                             }
-                        });
-                    } catch (e) {
-                        alert("Gagal mengirim data check-in. Periksa jaringan internet.");
-                        document.getElementById('btn-end-trip').disabled = false;
-                        document.getElementById('btn-end-trip').innerText = "🏁 Saya Sudah Tiba di Tujuan (Check-In)";
-                    }
+                        }, 
+                        (err) => {
+                            // Menangkap error jika GPS tiba-tiba mati / ditolak
+                            alert("Sistem gagal membaca lokasi akhir Anda. Pastikan GPS HP tetap menyala untuk Check-In!");
+                            resetBtn();
+                        },
+                        { enableHighAccuracy: true, timeout: 15000 }
+                    );
                 }
             }
-        }
-
         // Trigger inisialisasi sistem saat halaman terbuka
         window.onload = () => {
             loadDriverTask();
