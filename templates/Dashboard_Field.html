@@ -7,7 +7,7 @@
     <style>
         /* BASE & TYPOGRAPHY */
         :root {
-            --primary-color: #0f4c81; /* Corporate Blue */
+            --primary-color: #0f4c81;
             --primary-hover: #0a365c;
             --secondary-color: #f8f9fa;
             --success-color: #10b981;
@@ -22,19 +22,19 @@
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        
+
         body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding-bottom: 80px; }
         * { box-sizing: border-box; }
 
-        /* HEADER (TEMA PUTIH) */
-        .navbar { background-color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-bottom: 1px solid var(--border-color); }
-        .navbar-brand { font-size: 16px; font-weight: 800; color: var(--primary-color); letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;}
+        /* HEADER */
+        .navbar { background-color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); border-bottom: 1px solid var(--border-color); }
+        .navbar-brand { font-size: 16px; font-weight: 800; color: var(--primary-color); display: flex; align-items: center; gap: 8px; }
         .navbar-user { font-size: 13px; font-weight: 600; color: var(--text-muted); }
         .btn-logout { color: #ef4444; text-decoration: none; font-size: 12px; font-weight: 700; background: #fee2e2; padding: 6px 14px; border-radius: 20px; border: 1px solid #fecaca; transition: 0.2s; }
         .btn-logout:hover { background: #fecaca; }
         .logo-img { height: 26px; border-radius: 4px; }
 
-        /* LAYOUT & CARDS */
+        /* CARDS */
         .container { max-width: 600px; margin: 0 auto; padding: 20px 16px; }
         .card { background: white; padding: 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 20px; }
         .card-title { margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
@@ -43,56 +43,45 @@
         .form-group { margin-bottom: 16px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--text-muted); }
-        input, select { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: var(--radius-md); font-size: 14px; color: var(--text-main); background-color: #f9fafb; transition: border-color 0.2s, box-shadow 0.2s; outline: none; cursor: pointer;}
-        input:focus, select:focus { border-color: var(--primary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1); }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: var(--radius-md); font-size: 14px; color: var(--text-main); background-color: #f9fafb; outline: none; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1); }
 
         /* BUTTONS */
         .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px 16px; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background-color: var(--primary-color); color: white; }
-        .btn-primary:hover { background-color: var(--primary-hover); }
         .btn-success { background-color: var(--success-color); color: white; }
-        .btn-success:hover { background-color: #059669; }
         .btn-success:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .btn-secondary { background-color: #e5e7eb; color: #374151; }
 
         /* GEOFENCE WIDGET */
         .geo-widget { background: var(--secondary-color); border-radius: var(--radius-md); padding: 16px; border-left: 4px solid var(--primary-color); }
         .geo-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .geo-status { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; color: white; }
-        .bg-gray { background-color: #9ca3af; }
-        .bg-green { background-color: var(--success-color); }
-        .bg-red { background-color: var(--danger-color); }
+        .bg-gray { background-color: #9ca3af; } .bg-green { background-color: var(--success-color); } .bg-red { background-color: var(--danger-color); }
         .geo-distance { font-size: 24px; font-weight: 700; color: var(--text-main); margin: 8px 0 4px 0; }
         .geo-target { font-size: 13px; color: var(--text-muted); }
-        
         .sim-panel { background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; margin-top: 12px; display: none; }
         .toggle-sim { font-size: 12px; color: var(--primary-color); cursor: pointer; font-weight: 600; user-select: none; }
 
         /* CV GRID */
-        .cv-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+        .cv-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
         .cv-item { background: var(--secondary-color); border: 2px dashed #d1d5db; border-radius: var(--radius-md); aspect-ratio: 3/4; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s; }
         .cv-item.active { border: 2px solid var(--primary-color); background: #eff6ff; }
         .cv-item.done { border: 2px solid var(--success-color); }
-        .cv-item-title { font-size: 11px; font-weight: 700; color: var(--text-muted); position: absolute; top: 0; left: 0; right: 0; text-align: center; background: rgba(255,255,255,0.9); padding: 4px 0; z-index: 2; border-bottom: 1px solid var(--border-color); }
-        .cv-icon { font-size: 20px; color: #9ca3af; margin-top: 16px;}
+        .cv-item-title { font-size: 11px; font-weight: 700; color: var(--text-muted); position: absolute; top: 0; left: 0; right: 0; text-align: center; background: rgba(255, 255, 255, 0.9); padding: 4px 0; z-index: 2; border-bottom: 1px solid var(--border-color); }
+        .cv-icon { font-size: 20px; color: #9ca3af; margin-top: 16px; }
         .cv-image { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; display: none; }
-        .cv-badge { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 12px; z-index: 2; white-space: nowrap; }
+        .cv-badge { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.8); color: white; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 12px; z-index: 2; white-space: nowrap; }
 
         /* CAMERA PANEL */
-        .camera-panel { display: none; margin-top: 16px; background: #111827; border-radius: var(--radius-lg); padding: 16px; text-align: center; position: relative; overflow: hidden;}
-        .camera-header { color: white; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between;}
+        .camera-panel { display: none; margin-top: 16px; background: #111827; border-radius: var(--radius-lg); padding: 16px; text-align: center; position: relative; overflow: hidden; }
+        .camera-header { color: white; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; }
         #camera-preview { width: 100%; max-width: 100%; border-radius: var(--radius-md); background: #000; }
         .camera-actions { margin-top: 16px; display: flex; gap: 12px; }
-        .ai-processing { color: #60a5fa; font-size: 13px; margin-top: 12px; font-weight: 500; display: none;}
-        @keyframes scanMove {
-            0%   { top: 0%; }
-            100% { top: 100%; }
-        }
-        @keyframes boxPulse {
-            0%,100% { opacity: 1; }
-            50%      { opacity: 0.4; }
-        }
+        .ai-processing { color: #60a5fa; font-size: 13px; margin-top: 12px; font-weight: 500; display: none; }
+        @keyframes scanMove { 0% { top: 0%; } 100% { top: 100%; } }
 
-        /* RESULT WIDGET (SPLIT AI & MANUAL) */
+        /* RESULT WIDGET */
         .result-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
         .result-box { padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
         .result-box.ai { background: #ecfdf5; border-color: #a7f3d0; }
@@ -100,11 +89,49 @@
         .result-label { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 4px; }
         .result-value { font-size: 28px; font-weight: 800; }
 
-        /* STICKY BOTTOM ACTION */
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 16px 20px; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); border-top: 1px solid var(--border-color); display: flex; justify-content: center; z-index: 100;}
+        /* BOTTOM BAR */
+        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 16px 20px; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05); border-top: 1px solid var(--border-color); display: flex; justify-content: center; z-index: 100; }
         .bottom-bar .container-inner { width: 100%; max-width: 600px; display: flex; gap: 16px; align-items: center; }
+
+        /* MODAL AGREEMENT CSS */
+        #agreement-modal { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 16px; }
+        .agr-box { background: #fff; border-radius: 16px; width: 100%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.3); animation: agr-in 0.35s ease; }
+        @keyframes agr-in { from { transform: scale(0.88) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .agr-header { background: linear-gradient(135deg, #0a365c 0%, #1e5b94 100%); padding: 24px 24px 20px; text-align: center; flex-shrink: 0; }
+        .agr-header .agr-icon { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 12px; border: 2px solid rgba(255,255,255,0.25); }
+        .agr-header h2 { color: #fff; font-size: 17px; font-weight: 800; margin: 0 0 4px; }
+        .agr-header p { color: rgba(255,255,255,0.75); font-size: 12px; margin: 0; }
+        .agr-scroll { flex: 1; overflow-y: auto; padding: 20px 24px; font-size: 13px; line-height: 1.7; color: #374151; }
+        .agr-scroll::-webkit-scrollbar { width: 4px; }
+        .agr-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        
+        /* CSS Tambahan Modal Detail */
+        .agr-warning-box { background: #fff7ed; border: 1px solid #fed7aa; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start; }
+        .agr-warning-box .wi { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .agr-warning-box strong { color: #92400e; font-size: 13px; display: block; margin-bottom: 4px; }
+        .agr-warning-box p { color: #78350f; font-size: 12px; margin: 0; line-height: 1.6; }
+        .agr-danger-box { background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; display: flex; gap: 10px; align-items: flex-start; }
+        .agr-danger-box .wi { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+        .agr-danger-box strong { color: #991b1b; font-size: 13px; display: block; margin-bottom: 4px; }
+        .agr-danger-box p { color: #7f1d1d; font-size: 12px; margin: 0; line-height: 1.6; }
+        .agr-rules { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+        .rule-title { font-size: 12px; font-weight: 800; color: #0369a1; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .agr-rules ul { margin: 0; padding-left: 18px; color: #0c4a6e; font-size: 12px; line-height: 1.9; }
+        .agr-sanctions { background: #fdf4ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+        .agr-sanctions .rule-title { color: #7e22ce; }
+        .agr-sanctions ul { margin: 0; padding-left: 18px; color: #581c87; font-size: 12px; line-height: 1.9; }
+        .agr-scroll-hint { text-align: center; font-size: 11px; color: #9ca3af; margin-top: 8px; padding: 8px; animation: bounce 1.5s infinite; }
+        @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+        .agr-note { text-align: center; font-size: 11px; color: #9ca3af; margin-top: 10px; line-height: 1.5; }
+
+        .agr-footer { padding: 16px 24px 20px; border-top: 1px solid #e5e7eb; flex-shrink: 0; background: #f9fafb; }
+        .agr-checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; padding: 12px 14px; cursor: pointer; }
+        .agr-checkbox-row input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; cursor: pointer; }
+        #btn-agree { width: 100%; padding: 13px; background: linear-gradient(135deg, #0a365c, #1e5b94); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: not-allowed; opacity: 0.45; transition: all 0.2s; }
+        #btn-agree:not(:disabled):hover { transform: translateY(-1px); opacity: 1; }
     </style>
 </head>
+
 <body>
 
     <div class="navbar">
@@ -119,7 +146,7 @@
     </div>
 
     <div class="container">
-        
+
         <div class="card" style="padding: 0; overflow: hidden;">
             <div class="geo-widget">
                 <div class="geo-header">
@@ -128,7 +155,7 @@
                 </div>
                 <div class="geo-distance" id="geo-distance">-- m</div>
                 <div id="geo-badge" class="geo-status bg-gray" style="display: inline-block;">Menyelaraskan GPS...</div>
-                
+
                 <div id="sim-panel" class="sim-panel">
                     <label>Simulasi Radius (Meter)</label>
                     <input type="range" id="sim-slider" min="0" max="1000" value="150" oninput="updateSim()">
@@ -138,11 +165,11 @@
 
         <div class="card">
             <h3 class="card-title">📋 Informasi Dokumen & Petugas</h3>
-            
+
             <div class="form-row">
                 <div class="form-group">
-                    <label>Nama Petugas (Driver/Tally)</label>
-                    <input type="text" id="driver_name" placeholder="Nama Lengkap" value="{{ user.name }}">
+                    <label>Nama Petugas (Tally)</label>
+                    <input type="text" id="driver_name" value="{{ user.name }}" readonly>
                 </div>
                 <div class="form-group">
                     <label>No. Handphone</label>
@@ -159,50 +186,57 @@
                 </div>
                 <div class="form-group">
                     <label>Lokasi Operasional</label>
-                    <select id="warehouse_id" onchange="checkGeofence()">
+                    <select id="warehouse_id" disabled style="background-color: #e5e7eb; cursor: not-allowed; opacity: 1; color: #374151;">
                         <option value="">⏳ Memuat lokasi...</option>
                     </select>
                 </div>
             </div>
+            
             <div class="form-group" style="margin-bottom: 0;">
                 <label>Aktivitas Logistik</label>
-                <select id="type">
+                <select id="type" onchange="autoSelectWarehouse()">
                     <option value="muat">Pemuatan Kargo (Loading)</option>
                     <option value="bongkar">Pembongkaran Kargo (Unloading)</option>
                 </select>
             </div>
+            
+            <div class="form-group" style="margin-top: 16px; margin-bottom: 0;">
+                <label style="color: #4b5563;">📝 Catatan Lapangan (Kondisi Fisik / Segel)</label>
+                <textarea id="notes" rows="2" placeholder="Cth: Baris 3 ada kardus basah 2 box..."></textarea>
+            </div>
         </div>
 
         <div class="card">
-            <h3 class="card-title"> Verifikasi Muatan (Komputer Vision) & Aktual</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 0;">Selesaikan tahapan foto. Sistem otomatis menanamkan watermark lokasi & waktu. Jangan lupa isi <strong>Kuantitas Aktual</strong>.</p>
-            
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+                <div>
+                    <h3 class="card-title" style="margin-bottom: 4px; padding-bottom: 0; border: none;">📸 Tally Sheet Digital</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">Foto kargo <b>per baris</b>. AI menjumlahkan otomatis.</p>
+                </div>
+                <button class="btn btn-secondary" style="width: auto; padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 6px;" onclick="addNewBaris()">+ Tambah Baris</button>
+            </div>
+
             <div class="cv-grid" id="cv-grid"></div>
 
             <div class="camera-panel" id="camera-panel">
                 <div class="camera-header">
-                    <span id="cam-title">📸 State: 0%</span>
+                    <span id="cam-title">📸 State: -</span>
                     <span style="cursor:pointer; color:#9ca3af;" onclick="closeCameraPanel()">✕ Tutup</span>
                 </div>
 
-                <!-- WRAPPER: video + overlay canvas ditumpuk -->
                 <div style="position:relative; display:inline-block; width:100%; border-radius:var(--radius-md); overflow:hidden; background:#000;">
                     <video id="camera-preview" autoplay playsinline style="width:100%; display:block; border-radius:var(--radius-md);"></video>
-                    <!-- Overlay canvas untuk fake detection boxes -->
                     <canvas id="overlay-canvas" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; border-radius:var(--radius-md);"></canvas>
-                    <!-- Scan line effect -->
                     <div id="scan-line" style="display:none; position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,#00ff88,transparent); box-shadow:0 0 8px #00ff88; animation:scanMove 1.5s linear infinite; pointer-events:none;"></div>
-                    <!-- Status badge overlay -->
-                    <div id="detect-badge" style="display:none; position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); color:#00ff88; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; font-family:monospace; letter-spacing:0.5px;"></div>
+                    <div id="detect-badge" style="display:none; position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.7); color:#00ff88; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;"></div>
                 </div>
 
                 <canvas id="canvas" style="display:none;"></canvas>
-                
+
                 <div class="camera-actions">
                     <button class="btn btn-primary" id="btn-start" onclick="startCamera()">Aktifkan Kamera</button>
-                    <button class="btn btn-success" id="btn-snap" style="display:none;" onclick="snapAndCount()">Jepret & Analisis</button>
+                    <button class="btn btn-success" id="btn-snap" style="display:none;" onclick="snapAndCount()">Jepret & Hitung Baris Ini</button>
                 </div>
-                <div class="ai-processing" id="ai-status">⚙️ Mengekstraksi gambar & watermark...</div>
+                <div class="ai-processing" id="ai-status">⚙️ AI Vision sedang memproses foto...</div>
             </div>
 
             <div class="result-container">
@@ -212,7 +246,7 @@
                 </div>
                 <div class="result-box manual">
                     <div class="result-label" style="color: #1e40af;">Kuantitas Aktual</div>
-                    <input type="number" id="manual_qty" placeholder="Input angka" style="font-size: 20px; font-weight: 800; color: #1e40af; width: 100%; padding: 6px 12px; margin-top: 4px; border: 1px solid #93c5fd; border-radius: 6px; outline: none; background: white;">
+                    <input type="number" id="manual_qty" placeholder="Input angka" style="font-size: 20px; font-weight: 800; color: #1e40af; width: 100%; padding: 6px 12px; margin-top: 4px; border: 1px solid #93c5fd; border-radius: 6px;">
                 </div>
             </div>
         </div>
@@ -231,75 +265,85 @@
     </div>
 
     <script>
-        // Data Rencana Kuantitas dari Database
+        // MASTER DATA MEMORY
         let orderPlans = {};
+        let orderDetails = {}; 
+        let warehouses = {};
+        
+        // SENSOR DATA
+        let currentLat = null, currentLng = null;
+        let isSimulated = false;
 
-        // =====================================
-        // MEMUAT DATA SOPT DARI DATABASE
-        // =====================================
+        // CV DATA
+        let cvResults = {}; 
+        let currentState = null; 
+        let currentStream = null;
+        let barisCount = 0;
+        let detectionInterval = null;
+        let detectionBoxes = [];
+        let detectionPhase = 'scanning';
+
+        // 1. DATA INITIALIZATION
         async function loadOrdersDropdown() {
             const select = document.getElementById("order_id");
             try {
                 const res = await fetch("/api/orders");
                 const orders = await res.json();
-                
                 select.innerHTML = '<option value="">-- Pilih Dokumen Kargo --</option>';
-                
                 if (orders.length > 0) {
                     orders.forEach(o => {
                         orderPlans[o.id] = o.qty_plan;
+                        orderDetails[o.id] = o; 
                         select.innerHTML += `<option value="${o.id}">${o.id} - ${o.customer} (${o.qty_plan} Box)</option>`;
                     });
                 } else {
                     select.innerHTML = '<option value="">Tidak ada order aktif</option>';
                 }
-            } catch (err) {
-                select.innerHTML = '<option value="">Gagal menyambung server</option>';
-            }
+            } catch (err) { select.innerHTML = '<option value="">Gagal menyambung server</option>'; }
         }
-
-        function resetCVIfOrderChanged() {
-            document.getElementById('final-qty').innerText = "0";
-            document.getElementById('manual_qty').value = ""; // Reset input manual
-            cvResults = {};
-            document.querySelectorAll('.cv-item').forEach(c => {
-                c.classList.remove('done', 'active');
-                const badge = c.querySelector('.cv-badge');
-                if(badge) badge.remove();
-                c.querySelector('.cv-image').style.display = 'none';
-                c.querySelector('.cv-icon').style.display = 'block';
-            });
-            closeCameraPanel();
-        }
-
-        // =====================================
-        // GEOFENCE & SIMULATOR
-        // =====================================
-        let warehouses = {};
-        let currentLat = null, currentLng = null;
-        let isSimulated = false;
 
         async function loadWarehouses() {
             try {
                 const res = await fetch('/api/warehouses');
                 warehouses = await res.json();
-                
                 const whSelect = document.getElementById('warehouse_id');
-                whSelect.innerHTML = '<option value="">-- Pilih Lokasi Operasional --</option>';
+                whSelect.innerHTML = '<option value="">-- Lokasi Terkunci Sesuai SOPT --</option>';
                 Object.entries(warehouses).forEach(([key, wh]) => {
                     whSelect.innerHTML += `<option value="${key}">${wh.name}</option>`;
                 });
-
                 checkGeofence();
             } catch (err) { console.error("Gagal memuat parameter lokasi."); }
         }
 
+        // 2. AUTO WAREHOUSE SELECTION (POKA-YOKE)
+        function autoSelectWarehouse() {
+            const selectedOrder = document.getElementById('order_id').value;
+            const activityType = document.getElementById('type').value;
+            const whSelect = document.getElementById('warehouse_id');
+
+            if (selectedOrder && orderDetails[selectedOrder]) {
+                const order = orderDetails[selectedOrder];
+                const targetWarehouse = (activityType === 'muat') ? order.warehouse_origin : order.warehouse_dest;
+                whSelect.value = targetWarehouse;
+                checkGeofence();
+            } else {
+                whSelect.value = "";
+            }
+        }
+
+        function resetCVIfOrderChanged() {
+            document.getElementById('final-qty').innerText = "0";
+            document.getElementById('manual_qty').value = ""; 
+            initDynamicGrid();
+            closeCameraPanel();
+            autoSelectWarehouse(); // Trigger auto location
+        }
+
+        // 3. GEOFENCING LOGIC
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371000; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const R = 6371000; const dLat = (lat2 - lat1) * Math.PI / 180; const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
         function toggleSim() {
@@ -313,771 +357,355 @@
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(
                 (pos) => { currentLat = pos.coords.latitude; currentLng = pos.coords.longitude; checkGeofence(); },
-                (err) => {
-                    if(!isSimulated) {
-                        document.getElementById('geo-badge').innerText = "GPS Error. Gunakan Simulasi.";
-                        document.getElementById('geo-badge').className = "geo-status bg-red";
-                    }
-                }, { enableHighAccuracy: true }
+                (err) => { if (!isSimulated) { document.getElementById('geo-badge').innerText = "GPS Error. Gunakan Simulasi."; document.getElementById('geo-badge').className = "geo-status bg-red"; } }, 
+                { enableHighAccuracy: true }
             );
         }
 
         function checkGeofence() {
             if (Object.keys(warehouses).length === 0) return;
             const wh = warehouses[document.getElementById('warehouse_id').value];
-            if (!wh) return;
-
-            document.getElementById('geo-target-name').innerText = wh.name;
-
-            let dist = 0;
-            if (isSimulated) {
-                dist = parseInt(document.getElementById('sim-slider').value);
-            } else {
-                if (!currentLat) return;
-                dist = calculateDistance(currentLat, currentLng, wh.lat, wh.lng);
-            }
-            
-            document.getElementById('geo-distance').innerText = Math.round(dist) + " m";
             
             const badge = document.getElementById('geo-badge');
             const btnSubmit = document.getElementById('btn-submit');
             const submitMsg = document.getElementById('submit-message');
 
-            if (dist <= wh.radius) {
-                badge.innerText = "Dalam Radius Operasional";
-                badge.className = "geo-status bg-green";
-                btnSubmit.disabled = false;
-                submitMsg.style.color = "var(--success-color)";
-                submitMsg.innerText = "Sistem Siap (Geofence Valid)";
-            } else {
-                badge.innerText = "Peringatan: Di Luar Radius";
-                badge.className = "geo-status bg-red";
-                btnSubmit.disabled = true;
-                submitMsg.style.color = "var(--danger-color)";
-                submitMsg.innerText = "Mendekatlah ke gudang untuk membuka akses";
-            }
-        }
-
-        // =====================================
-        // WARNING & AGREEMENT MODAL
-        // =====================================
-        function showAgreementModal() {
-            document.getElementById('agreement-modal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            // Tombol Setuju baru aktif setelah scroll sampai bawah
-            const box = document.getElementById('agreement-scroll');
-            box.addEventListener('scroll', function() {
-                const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 10;
-                const btn = document.getElementById('btn-agree');
-                if (atBottom) {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                }
-            });
-        }
-
-        function acceptAgreement() {
-            const checkbox = document.getElementById('chk-agree');
-            if (!checkbox.checked) {
-                alert('Anda harus mencentang pernyataan persetujuan terlebih dahulu.');
+            if (!wh) {
+                document.getElementById('geo-target-name').innerText = "Pilih SOPT Dulu";
+                document.getElementById('geo-distance').innerText = "-- m";
+                badge.innerText = "Menunggu SOPT"; badge.className = "geo-status bg-gray";
+                btnSubmit.disabled = true; submitMsg.innerText = "Lengkapi Dokumen Order"; submitMsg.style.color = "var(--danger-color)";
                 return;
             }
-            // Simpan ke sessionStorage agar tidak muncul lagi selama sesi ini
-            sessionStorage.setItem('spil_agreement_accepted', '1');
-            document.getElementById('agreement-modal').style.display = 'none';
-            document.body.style.overflow = '';
+
+            document.getElementById('geo-target-name').innerText = wh.name;
+            let dist = isSimulated ? parseInt(document.getElementById('sim-slider').value) : (currentLat ? calculateDistance(currentLat, currentLng, wh.lat, wh.lng) : 0);
+            
+            document.getElementById('geo-distance').innerText = Math.round(dist) + " m";
+
+            if (dist <= wh.radius) {
+                badge.innerText = "Dalam Radius Operasional"; badge.className = "geo-status bg-green";
+                btnSubmit.disabled = false; submitMsg.style.color = "var(--success-color)";
+                submitMsg.innerText = "Sistem Siap (Geofence Valid)";
+            } else {
+                badge.innerText = "Peringatan: Di Luar Radius"; badge.className = "geo-status bg-red";
+                btnSubmit.disabled = true; submitMsg.style.color = "var(--danger-color)";
+                submitMsg.innerText = "Mendekatlah ke area operasi yang tepat";
+            }
         }
 
-        window.onload = () => {
-            // Tampilkan modal agreement jika belum diterima di sesi ini
-            const accepted = sessionStorage.getItem('spil_agreement_accepted');
-            if (!accepted) {
-                showAgreementModal();
-            }
-            loadWarehouses();
-            loadOrdersDropdown();
-        };
+        // 4. CV & CAMERA DYNAMIC GRID
+        function initDynamicGrid() {
+            document.getElementById('cv-grid').innerHTML = '';
+            barisCount = 0; cvResults = {};
+            addNewBaris(); 
+            const segelHtml = `<div class="cv-item" id="card-SegelPintu" onclick="openCameraPanel('Segel Pintu')"><div class="cv-item-title" style="color:#b45309;">Segel Pintu</div><div class="cv-icon" id="ph-SegelPintu">🔒</div><img id="img-SegelPintu" class="cv-image"></div>`;
+            document.getElementById('cv-grid').insertAdjacentHTML('beforeend', segelHtml);
+        }
 
-        // =====================================
-        // AI VISION (KAMERA & WATERMARK)
-        // =====================================
-        const states = ['0%', '20%', '50%', '70%', '100%'];
-        let cvResults = {}; let currentState = null; let currentStream = null;
-
-        const grid = document.getElementById('cv-grid');
-        states.forEach(s => {
-            const safeId = s.replace('%', '');
-            grid.innerHTML += `
-                <div class="cv-item" id="card-${safeId}" onclick="openCameraPanel('${s}')">
-                    <div class="cv-item-title">${s}</div>
-                    <div class="cv-icon" id="ph-${safeId}">📸</div>
-                    <img id="img-${safeId}" class="cv-image">
-                </div>
-            `;
-        });
+        function addNewBaris() {
+            barisCount++;
+            const stateName = `Baris ${barisCount}`; const safeId = `Baris${barisCount}`;
+            const html = `<div class="cv-item" id="card-${safeId}" onclick="openCameraPanel('${stateName}')"><div class="cv-item-title">${stateName}</div><div class="cv-icon" id="ph-${safeId}">📸</div><img id="img-${safeId}" class="cv-image"></div>`;
+            const segelCard = document.getElementById('card-SegelPintu');
+            if (segelCard) { segelCard.insertAdjacentHTML('beforebegin', html); } 
+            else { document.getElementById('cv-grid').insertAdjacentHTML('beforeend', html); }
+        }
 
         function openCameraPanel(state) {
             const selectedOrder = document.getElementById('order_id').value;
-            if (!selectedOrder) {
-                alert("Sistem Terkunci!\nMohon pilih ID Dokumen (Order) terlebih dahulu sebelum mengaktifkan kamera.");
-                document.getElementById('order_id').focus();
-                return;
-            }
+            if (!selectedOrder) { alert("Sistem Terkunci!\nPilih ID Dokumen (Order SOPT) terlebih dahulu."); document.getElementById('order_id').focus(); return; }
 
-            // Reset semua state kamera & overlay sebelum buka panel baru
-            clearOverlay();
-            detectionBoxes = [];
-            detectionPhase = 'scanning';
+            clearOverlay(); detectionBoxes = []; detectionPhase = 'scanning';
             if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
+            
             const video = document.getElementById('camera-preview');
-            video.srcObject = null;
-            video.style.display = 'none';
+            video.srcObject = null; video.style.display = 'none';
             document.getElementById('btn-start').style.display = 'block';
             document.getElementById('btn-snap').style.display = 'none';
             document.getElementById('ai-status').style.display = 'none';
             document.getElementById('ai-status').style.color = '#60a5fa';
 
-            // Bersihkan overlay canvas
             const overlay = document.getElementById('overlay-canvas');
-            if (overlay) {
-                const ctx = overlay.getContext('2d');
-                ctx.clearRect(0, 0, overlay.width, overlay.height);
-            }
+            if (overlay) { overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height); }
 
-            currentState = state;
+            currentState = state; const safeId = state.replace(/[^a-zA-Z0-9]/g, '');
             document.querySelectorAll('.cv-item').forEach(c => c.classList.remove('active'));
-            document.getElementById('card-' + state.replace('%', '')).classList.add('active');
+            document.getElementById('card-' + safeId).classList.add('active');
             document.getElementById('camera-panel').style.display = 'block';
-            document.getElementById('cam-title').innerText = `📸 Pengambilan State: ${state}`;
+            document.getElementById('cam-title').innerText = `📸 Pengambilan: ${state}`;
         }
 
         function closeCameraPanel() {
-            clearOverlay();
-            detectionBoxes = [];
-            detectionPhase = 'scanning';
+            clearOverlay(); detectionBoxes = []; detectionPhase = 'scanning';
             if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; }
-            const video = document.getElementById('camera-preview');
-            video.srcObject = null;
-            video.style.display = 'none';
+            document.getElementById('camera-preview').style.display = 'none';
             document.getElementById('camera-panel').style.display = 'none';
             document.getElementById('btn-start').style.display = 'block';
             document.getElementById('btn-snap').style.display = 'none';
         }
 
-        // =====================================
-        // FAKE DETECTION OVERLAY (REAL-TIME)
-        // =====================================
-        let detectionInterval = null;
-        let detectionBoxes = [];
-        let detectionPhase = 'scanning'; // scanning | analyzing | done
-
+        // FAKE DETECTION OVERLAY LOGIC
         function generateFakeBoxes(W, H) {
-            // Buat 4-10 kotak deteksi acak yang terlihat natural
-            const count = 4 + Math.floor(Math.random() * 7);
-            const boxes = [];
+            const count = 4 + Math.floor(Math.random() * 7); const boxes = [];
             for (let i = 0; i < count; i++) {
-                const w = 40 + Math.random() * 80;
-                const h = 35 + Math.random() * 70;
-                const x = 10 + Math.random() * (W - w - 20);
-                const y = 10 + Math.random() * (H - h - 80);
-                boxes.push({
-                    x, y, w, h,
-                    label: 'BOX',
-                    conf: (0.72 + Math.random() * 0.27).toFixed(2),
-                    color: `hsl(${140 + Math.random()*40}, 90%, 55%)`,
-                    phase: Math.random() // buat tiap kotak beda phase kedip
-                });
+                const w = 40 + Math.random() * 80; const h = 35 + Math.random() * 70;
+                const x = 10 + Math.random() * (W - w - 20); const y = 10 + Math.random() * (H - h - 80);
+                boxes.push({ x, y, w, h, label: 'BOX', conf: (0.72 + Math.random() * 0.27).toFixed(2), color: `hsl(${140 + Math.random() * 40}, 90%, 55%)`, phase: Math.random() });
             }
             return boxes;
         }
 
         function drawDetectionOverlay(phase) {
-            const video = document.getElementById('camera-preview');
-            const overlay = document.getElementById('overlay-canvas');
+            const video = document.getElementById('camera-preview'); const overlay = document.getElementById('overlay-canvas');
             if (!video || !overlay || video.videoWidth === 0) return;
-
-            overlay.width  = video.videoWidth;
-            overlay.height = video.videoHeight;
-            const ctx = overlay.getContext('2d');
-            ctx.clearRect(0, 0, overlay.width, overlay.height);
-
-            const W = overlay.width;
-            const H = overlay.height;
-            const t = Date.now();
+            overlay.width = video.videoWidth; overlay.height = video.videoHeight;
+            const ctx = overlay.getContext('2d'); ctx.clearRect(0, 0, overlay.width, overlay.height);
+            const W = overlay.width; const H = overlay.height; const t = Date.now();
 
             if (phase === 'scanning') {
-                // Kotak bergerak-gerak acak, muncul & hilang
                 detectionBoxes.forEach((box, i) => {
-                    // Gerak sedikit setiap frame (jitter)
-                    box.x += (Math.random() - 0.5) * 2;
-                    box.y += (Math.random() - 0.5) * 2;
-                    box.x = Math.max(5, Math.min(W - box.w - 5, box.x));
-                    box.y = Math.max(5, Math.min(H - box.h - 80, box.y));
-
-                    const alpha = 0.5 + 0.5 * Math.sin(t / 400 + box.phase * Math.PI * 2);
-                    ctx.globalAlpha = alpha;
-
-                    // Kotak
-                    ctx.strokeStyle = box.color;
-                    ctx.lineWidth = 1.5;
-                    ctx.setLineDash([6, 3]);
-                    ctx.strokeRect(box.x, box.y, box.w, box.h);
-
-                    // Sudut tebal (corner brackets)
-                    const cs = 12;
-                    ctx.setLineDash([]);
-                    ctx.lineWidth = 3;
-                    [[box.x, box.y, 1, 1], [box.x+box.w, box.y, -1, 1],
-                     [box.x, box.y+box.h, 1, -1], [box.x+box.w, box.y+box.h, -1, -1]].forEach(([cx,cy,dx,dy]) => {
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy + dy*cs); ctx.lineTo(cx, cy); ctx.lineTo(cx + dx*cs, cy);
-                        ctx.stroke();
+                    box.x += (Math.random() - 0.5) * 2; box.y += (Math.random() - 0.5) * 2;
+                    box.x = Math.max(5, Math.min(W - box.w - 5, box.x)); box.y = Math.max(5, Math.min(H - box.h - 80, box.y));
+                    const alpha = 0.5 + 0.5 * Math.sin(t / 400 + box.phase * Math.PI * 2); ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = box.color; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]); ctx.strokeRect(box.x, box.y, box.w, box.h);
+                    const cs = 12; ctx.setLineDash([]); ctx.lineWidth = 3;
+                    [[box.x, box.y, 1, 1], [box.x + box.w, box.y, -1, 1], [box.x, box.y + box.h, 1, -1], [box.x + box.w, box.y + box.h, -1, -1]].forEach(([cx, cy, dx, dy]) => {
+                        ctx.beginPath(); ctx.moveTo(cx, cy + dy * cs); ctx.lineTo(cx, cy); ctx.lineTo(cx + dx * cs, cy); ctx.stroke();
                     });
-
-                    // Label
-                    ctx.globalAlpha = alpha;
-                    ctx.fillStyle = box.color;
-                    ctx.fillRect(box.x, box.y - 18, 72, 18);
-                    ctx.fillStyle = '#000';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.fillText(`${box.label} ${box.conf}`, box.x + 4, box.y - 5);
-
-                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = box.color; ctx.fillRect(box.x, box.y - 18, 72, 18);
+                    ctx.fillStyle = '#000'; ctx.font = 'bold 10px monospace'; ctx.fillText(`${box.label} ${box.conf}`, box.x + 4, box.y - 5); ctx.globalAlpha = 1;
                 });
-
-                // Update badge
                 const badge = document.getElementById('detect-badge');
-                if (badge) {
-                    badge.style.display = 'block';
-                    const dotCount = Math.floor(t / 400) % 4;
-                    badge.textContent = `🔍 SCANNING${'.'.repeat(dotCount)}  ${detectionBoxes.length} objek`;
-                }
-
+                if (badge) { badge.style.display = 'block'; badge.textContent = `🔍 SCANNING${'.'.repeat(Math.floor(t / 400) % 4)}  ${detectionBoxes.length} objek`; }
             } else if (phase === 'analyzing') {
-                // Kotak berkedip cepat merah/kuning — "AI Processing"
                 detectionBoxes.forEach(box => {
                     const flicker = Math.sin(t / 120 + box.phase * 5) > 0;
-                    ctx.globalAlpha = flicker ? 1 : 0.3;
-                    ctx.strokeStyle = flicker ? '#ef4444' : '#f59e0b';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([]);
-                    ctx.strokeRect(box.x, box.y, box.w, box.h);
-
-                    // Overlay merah transparan
-                    ctx.fillStyle = flicker ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.1)';
-                    ctx.fillRect(box.x, box.y, box.w, box.h);
-                    ctx.globalAlpha = 1;
+                    ctx.globalAlpha = flicker ? 1 : 0.3; ctx.strokeStyle = flicker ? '#ef4444' : '#f59e0b';
+                    ctx.lineWidth = 2; ctx.setLineDash([]); ctx.strokeRect(box.x, box.y, box.w, box.h);
+                    ctx.fillStyle = flicker ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.1)'; ctx.fillRect(box.x, box.y, box.w, box.h); ctx.globalAlpha = 1;
                 });
-
-                // Badge analyzing
-                const badge = document.getElementById('detect-badge');
-                if (badge) {
-                    badge.style.color = '#60a5fa';
-                    badge.textContent = `⚙️ AI MENGANALISIS...`;
-                }
-
+                const badge = document.getElementById('detect-badge'); if (badge) { badge.style.color = '#60a5fa'; badge.textContent = `⚙️ AI MENGANALISIS...`; }
             } else if (phase === 'done') {
-                // Kotak hijau solid dengan label jumlah
                 detectionBoxes.forEach((box, i) => {
-                    ctx.globalAlpha = 0.9;
-                    ctx.strokeStyle = '#10b981';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([]);
-                    ctx.strokeRect(box.x, box.y, box.w, box.h);
-                    ctx.fillStyle = 'rgba(16,185,129,0.1)';
-                    ctx.fillRect(box.x, box.y, box.w, box.h);
-
-                    // Sudut tebal hijau
-                    const cs = 10;
-                    ctx.lineWidth = 3;
-                    ctx.strokeStyle = '#10b981';
-                    [[box.x,box.y,1,1],[box.x+box.w,box.y,-1,1],
-                     [box.x,box.y+box.h,1,-1],[box.x+box.w,box.y+box.h,-1,-1]].forEach(([cx,cy,dx,dy]) => {
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy+dy*cs); ctx.lineTo(cx,cy); ctx.lineTo(cx+dx*cs, cy);
-                        ctx.stroke();
+                    ctx.globalAlpha = 0.9; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2; ctx.setLineDash([]);
+                    ctx.strokeRect(box.x, box.y, box.w, box.h); ctx.fillStyle = 'rgba(16,185,129,0.1)'; ctx.fillRect(box.x, box.y, box.w, box.h);
+                    const cs = 10; ctx.lineWidth = 3; ctx.strokeStyle = '#10b981';
+                    [[box.x, box.y, 1, 1], [box.x + box.w, box.y, -1, 1], [box.x, box.y + box.h, 1, -1], [box.x + box.w, box.y + box.h, -1, -1]].forEach(([cx, cy, dx, dy]) => {
+                        ctx.beginPath(); ctx.moveTo(cx, cy + dy * cs); ctx.lineTo(cx, cy); ctx.lineTo(cx + dx * cs, cy); ctx.stroke();
                     });
-
-                    // Label hijau
-                    ctx.fillStyle = '#10b981';
-                    ctx.fillRect(box.x, box.y - 18, 64, 18);
-                    ctx.fillStyle = '#fff';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.fillText(`✓ BOX #${i+1}`, box.x + 4, box.y - 5);
-                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = '#10b981'; ctx.fillRect(box.x, box.y - 18, 64, 18);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px monospace'; ctx.fillText(`✓ BOX #${i + 1}`, box.x + 4, box.y - 5); ctx.globalAlpha = 1;
                 });
-
-                // Hentikan animasi setelah done
-                clearInterval(detectionInterval);
-                detectionInterval = null;
-                const badge = document.getElementById('detect-badge');
-                if (badge) {
-                    badge.style.color = '#10b981';
-                    badge.textContent = `✅ ${detectionBoxes.length} TERDETEKSI`;
-                }
+                clearInterval(detectionInterval); detectionInterval = null;
+                const badge = document.getElementById('detect-badge'); if (badge) { badge.style.color = '#10b981'; badge.textContent = `✅ ${detectionBoxes.length} TERDETEKSI`; }
             }
         }
 
         function startDetectionOverlay() {
-            const video = document.getElementById('camera-preview');
-            detectionPhase = 'scanning';
-
-            // Generate kotak fake
-            const W = video.videoWidth || 640;
-            const H = video.videoHeight || 480;
-            detectionBoxes = generateFakeBoxes(W, H);
-
-            // Tampilkan scan line
-            const scanLine = document.getElementById('scan-line');
-            if (scanLine) scanLine.style.display = 'block';
-
-            // Animasi loop ~30fps
-            if (detectionInterval) clearInterval(detectionInterval);
-            detectionInterval = setInterval(() => drawDetectionOverlay(detectionPhase), 33);
+            const video = document.getElementById('camera-preview'); detectionPhase = 'scanning';
+            const W = video.videoWidth || 640; const H = video.videoHeight || 480; detectionBoxes = generateFakeBoxes(W, H);
+            const scanLine = document.getElementById('scan-line'); if (scanLine) scanLine.style.display = 'block';
+            if (detectionInterval) clearInterval(detectionInterval); detectionInterval = setInterval(() => drawDetectionOverlay(detectionPhase), 33);
         }
 
-        function stopDetectionToAnalyzing() {
-            detectionPhase = 'analyzing';
-            const scanLine = document.getElementById('scan-line');
-            if (scanLine) scanLine.style.display = 'none';
-        }
-
-        function stopDetectionToDone() {
-            detectionPhase = 'done';
-            drawDetectionOverlay('done');
-        }
-
+        function stopDetectionToAnalyzing() { detectionPhase = 'analyzing'; const scanLine = document.getElementById('scan-line'); if (scanLine) scanLine.style.display = 'none'; }
+        function stopDetectionToDone() { detectionPhase = 'done'; drawDetectionOverlay('done'); }
         function clearOverlay() {
             if (detectionInterval) { clearInterval(detectionInterval); detectionInterval = null; }
-            const overlay = document.getElementById('overlay-canvas');
-            if (overlay) overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
-            const badge = document.getElementById('detect-badge');
-            if (badge) badge.style.display = 'none';
-            const scanLine = document.getElementById('scan-line');
-            if (scanLine) scanLine.style.display = 'none';
+            const overlay = document.getElementById('overlay-canvas'); if (overlay) overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+            const badge = document.getElementById('detect-badge'); if (badge) badge.style.display = 'none';
+            const scanLine = document.getElementById('scan-line'); if (scanLine) scanLine.style.display = 'none';
         }
 
         async function startCamera() {
             try {
                 currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 const video = document.getElementById('camera-preview');
-                video.srcObject = currentStream;
-                video.style.display = 'block';
-                document.getElementById('btn-start').style.display = 'none';
-                document.getElementById('btn-snap').style.display = 'block';
-
-                // Mulai overlay deteksi setelah video siap
-                video.onloadedmetadata = () => { startDetectionOverlay(); };
-                // Fallback jika sudah siap
-                setTimeout(() => { if (video.videoWidth > 0) startDetectionOverlay(); }, 800);
+                video.srcObject = currentStream; video.style.display = 'block';
+                document.getElementById('btn-start').style.display = 'none'; document.getElementById('btn-snap').style.display = 'block';
+                video.onloadedmetadata = () => { startDetectionOverlay(); }; setTimeout(() => { if (video.videoWidth > 0) startDetectionOverlay(); }, 800);
             } catch (err) { alert("Kamera gagal diakses. Pastikan izin browser diberikan."); }
         }
 
         async function snapAndCount() {
-            const video = document.getElementById('camera-preview');
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            // Switch overlay ke fase analyzing
+            const video = document.getElementById('camera-preview'); const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
             stopDetectionToAnalyzing();
-
-            // Atur ukuran canvas
-            canvas.width = video.videoWidth || 640; 
-            canvas.height = video.videoHeight || 480;
+            canvas.width = video.videoWidth || 640; canvas.height = video.videoHeight || 480;
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // ===========================================
-            // LOGIKA WATERMARK OTOMATIS
-            // ===========================================
-            const now = new Date().toLocaleString('id-ID');
-            const orderID = document.getElementById('order_id').value || 'NO-ORDER';
-            const operatorName = document.getElementById('driver_name').value || 'Unknown';
-            const coordText = currentLat ? `${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}` : 'Simulasi GPS';
-
-            // Background biru transparan
-            ctx.fillStyle = 'rgba(10, 54, 92, 0.75)'; 
-            ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
-            
-            // Baris 1
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '14px sans-serif';
-            ctx.fillText(`📍 GPS: ${coordText} | 🕐 ${now} WIB`, 15, canvas.height - 45);
-            
-            // Baris 2
-            ctx.fillStyle = '#fcd34d'; 
-            ctx.font = 'bold 15px sans-serif';
-            ctx.fillText(`📦 DOC: ${orderID} | 👤 OPR: ${operatorName} | STATE: ${currentState}`, 15, canvas.height - 20);
-            // ===========================================
+            // WATERMARK
+            const now = new Date().toLocaleString('id-ID'); const orderID = document.getElementById('order_id').value || 'NO-ORDER';
+            const operatorName = document.getElementById('driver_name').value || 'Unknown'; const coordText = currentLat ? `${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}` : 'Simulasi GPS';
+            ctx.fillStyle = 'rgba(10, 54, 92, 0.75)'; ctx.fillRect(0, canvas.height - 70, canvas.width, 70);
+            ctx.fillStyle = '#ffffff'; ctx.font = '14px sans-serif'; ctx.fillText(`📍 GPS: ${coordText} | 🕐 ${now} WIB`, 15, canvas.height - 45);
+            ctx.fillStyle = '#fcd34d'; ctx.font = 'bold 15px sans-serif'; ctx.fillText(`📦 DOC: ${orderID} | 👤 OPR: ${operatorName} | STATE: ${currentState}`, 15, canvas.height - 20);
 
             const photoBase64 = canvas.toDataURL('image/jpeg', 0.8);
-            
-            // Update Thumbnail di UI
-            const safeId = currentState.replace('%', '');
+            const safeId = currentState.replace(/[^a-zA-Z0-9]/g, '');
             document.getElementById('ph-' + safeId).style.display = 'none';
-            const imgEl = document.getElementById('img-' + safeId);
-            imgEl.src = photoBase64; imgEl.style.display = 'block';
+            const imgEl = document.getElementById('img-' + safeId); imgEl.src = photoBase64; imgEl.style.display = 'block';
 
             if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); }
-            document.getElementById('camera-preview').style.display = 'none';
-            document.getElementById('btn-snap').style.display = 'none';
-            document.getElementById('ai-status').style.display = 'block';
+            document.getElementById('camera-preview').style.display = 'none'; document.getElementById('btn-snap').style.display = 'none'; document.getElementById('ai-status').style.display = 'block';
 
-            const cardEl = document.getElementById('card-' + safeId);
-            const selectedOrder = document.getElementById('order_id').value;
-            const targetQtyPlan = orderPlans[selectedOrder] || 0; 
-
-            // ===========================================
-            // REAL CV: Kirim foto ke Gemini Vision via backend
-            // ===========================================
-            let finalCount = 0;
-            let cvConfidence = 'rendah';
-            let cvAnomaly = false;
-            let cvNotes = '';
+            const cardEl = document.getElementById('card-' + safeId); const selectedOrder = document.getElementById('order_id').value; const targetQtyPlan = orderPlans[selectedOrder] || 0;
+            let finalCount = 0; let cvConfidence = 'tinggi'; let cvAnomaly = false; let cvNotes = ''; let finalPhoto = photoBase64; 
 
             document.getElementById('ai-status').innerText = '🤖 AI Vision sedang menghitung kotak...';
 
+            if (currentState.includes("Segel")) {
+                stopDetectionToDone(); await new Promise(r => setTimeout(r, 900)); closeCameraPanel();
+                cvResults[currentState] = { count: 0, confidence: 'tinggi', anomaly: false, notes: 'Foto Segel', photo: photoBase64 };
+                cardEl.classList.add('done');
+                document.getElementById('ai-status').innerText = '✅ Foto Segel Tersimpan.'; document.getElementById('ai-status').style.color = '#10b981';
+                updateTotalQty(); return;
+            }
+
             try {
-                const cvRes = await fetch('/api/count_boxes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image: photoBase64,
-                        state: currentState,
-                        order_id: selectedOrder,
-                        qty_plan: targetQtyPlan
-                    })
-                });
+                const cvRes = await fetch('/api/count_boxes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: photoBase64, state: currentState, order_id: selectedOrder, qty_plan: targetQtyPlan }) });
                 const cvData = await cvRes.json();
                 if (cvData.error) throw new Error(cvData.error);
-                finalCount = cvData.count || 0;
-                cvConfidence = cvData.confidence || 'rendah';
-                cvAnomaly = cvData.anomaly || false;
-                cvNotes = cvData.notes || '';
+                finalCount = cvData.count || 0; cvConfidence = cvData.confidence || 'rendah'; cvAnomaly = cvData.anomaly || false; cvNotes = cvData.notes || '';
+                if (cvData.annotated_image) { finalPhoto = "data:image/jpeg;base64," + cvData.annotated_image; imgEl.src = finalPhoto; }
             } catch (err) {
-                console.warn('CV API error, menggunakan fallback:', err.message);
-                // Fallback: estimasi berdasarkan state
-                if (currentState === '0%') finalCount = 0;
-                else if (currentState === '20%') finalCount = Math.floor(targetQtyPlan * 0.2);
-                else if (currentState === '50%') finalCount = Math.floor(targetQtyPlan * 0.5);
-                else if (currentState === '70%') finalCount = Math.floor(targetQtyPlan * 0.7);
-                else if (currentState === '100%') finalCount = targetQtyPlan;
-                cvConfidence = 'rendah'; cvNotes = 'Fallback (CV tidak tersedia)';
+                console.warn('CV API error:', err.message); finalCount = 0; cvConfidence = 'rendah'; cvNotes = 'YOLO Error / Offline';
             }
 
-            // Switch overlay ke fase DONE — tampilkan kotak hijau hasil deteksi
-            stopDetectionToDone();
-            await new Promise(r => setTimeout(r, 900)); // biarkan user lihat hasil sebentar
-            
-            // ===========================================
-            // TERAPKAN HASIL KE UI
-            // ===========================================
-            closeCameraPanel(); 
-
-            cvResults[currentState] = { count: finalCount, confidence: cvConfidence, anomaly: cvAnomaly, notes: cvNotes, photo: photoBase64 };
+            stopDetectionToDone(); await new Promise(r => setTimeout(r, 900)); closeCameraPanel();
+            cvResults[currentState] = { count: finalCount, confidence: cvConfidence, anomaly: cvAnomaly, notes: cvNotes, photo: finalPhoto };
             cardEl.classList.add('done');
-            
-            const existingBadge = cardEl.querySelector('.cv-badge');
-            if(existingBadge) existingBadge.remove();
 
+            const existingBadge = cardEl.querySelector('.cv-badge'); if (existingBadge) existingBadge.remove();
             const badgeColor = cvAnomaly ? '#ef4444' : cvConfidence === 'tinggi' ? '#10b981' : '#f59e0b';
-            const anomalyIcon = cvAnomaly ? '⚠️ ' : '';
-            cardEl.innerHTML += `<div class="cv-badge" style="background:${badgeColor}">${anomalyIcon}${finalCount} Box</div>`;
-            
-            // Tampilkan alert anomali
-            if (cvAnomaly && cvNotes) {
-                document.getElementById('ai-status').innerText = `⚠️ ANOMALI: ${cvNotes}`;
-                document.getElementById('ai-status').style.color = '#ef4444';
-            } else {
-                document.getElementById('ai-status').innerText = `✅ CV Selesai: ${finalCount} kotak (confidence: ${cvConfidence})${cvNotes ? ' — ' + cvNotes : ''}`;
-                document.getElementById('ai-status').style.color = '#10b981';
-            }
-            document.getElementById('ai-status').style.display = 'block';
+            cardEl.innerHTML += `<div class="cv-badge" style="background:${badgeColor}">${finalCount} Box</div>`;
 
-            // Cari nilai maksimum dari semua state
-            let maxCount = 0; 
-            Object.values(cvResults).forEach(r => { if(r.count > maxCount) maxCount = r.count; });
-            
-            // Update Hasil AI Final
-            document.getElementById('final-qty').innerText = maxCount;
-            document.getElementById('manual_qty').value = maxCount;
+            if (cvAnomaly && cvNotes) { document.getElementById('ai-status').innerText = `⚠️ ANOMALI: ${cvNotes}`; document.getElementById('ai-status').style.color = '#ef4444'; } 
+            else { document.getElementById('ai-status').innerText = `✅ CV Selesai: ${finalCount} kotak`; document.getElementById('ai-status').style.color = '#10b981'; }
+            updateTotalQty();
+        }
+
+        // 5. SUM LOGIC
+        function updateTotalQty() {
+            let totalCount = 0;
+            Object.keys(cvResults).forEach(key => { if (key.includes('Baris')) { totalCount += cvResults[key].count; } });
+            document.getElementById('final-qty').innerText = totalCount; document.getElementById('manual_qty').value = totalCount;
         }
 
         async function submitData() {
-            const selectedOrder = document.getElementById('order_id').value;
-            if (!selectedOrder) {
-                alert("Harap pilih ID Dokumen (Order) sebelum men-submit data!");
-                return;
-            }
+            const manualQty = document.getElementById('manual_qty').value; const selectedOrder = document.getElementById('order_id').value;
+            if (!selectedOrder) { alert("Harap pilih ID Dokumen (Order)!"); return; }
+            if (!manualQty) { alert("Harap isi Kuantitas Aktual!"); document.getElementById('manual_qty').focus(); return; }
 
-            const manualQty = document.getElementById('manual_qty').value;
-            if (!manualQty || manualQty === "") {
-                alert("Harap isi Kuantitas Aktual sebelum mengirim laporan!");
-                document.getElementById('manual_qty').focus();
-                return;
-            }
+            const btn = document.getElementById('btn-submit'); const msg = document.getElementById('submit-message');
+            btn.innerText = "⏳ Memproses..."; btn.disabled = true; msg.innerText = "Mengamankan data ke server..."; msg.style.color = "var(--text-muted)";
 
-            const btn = document.getElementById('btn-submit');
-            const msg = document.getElementById('submit-message');
-            btn.innerText = "⏳ Memproses..."; btn.disabled = true;
-            msg.innerText = "Mengamankan data ke server..."; msg.style.color = "var(--text-muted)";
-
+            const phoneVal = document.getElementById('phone_number').value || "-"; const noteVal = document.getElementById('notes').value || "";
+            const finalNotes = `HP: ${phoneVal} | Catatan: ${noteVal}`;
             const payload = {
-                order_id: selectedOrder, 
-                type: document.getElementById('type').value,
-                warehouse_id: document.getElementById('warehouse_id').value, 
-                qty: parseInt(manualQty), // MENGIRIM KUANTITAS AKTUAL YANG DIINPUT TALLYMAN
-                lat: currentLat, lng: currentLng, cv_counts: cvResults,
-                driver_name: document.getElementById('driver_name').value,
-                notes: "No. HP: " + document.getElementById('phone_number').value
+                order_id: selectedOrder, type: document.getElementById('type').value, warehouse_id: document.getElementById('warehouse_id').value,
+                qty: parseInt(manualQty), lat: currentLat, lng: currentLng, cv_counts: cvResults, driver_name: document.getElementById('driver_name').value, notes: finalNotes
             };
 
             try {
                 const res = await fetch('/api/submit_record', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await res.json();
-                if (data.success) {
-                    msg.style.color = "var(--success-color)"; msg.innerText = "✅ Transmisi Berhasil!";
-                    btn.innerText = "Terkirim";
-                    setTimeout(() => location.reload(), 2000);
-                } else { 
-                    msg.style.color = "var(--danger-color)"; msg.innerText = "Kesalahan Server: " + data.error; 
-                    btn.innerText = "Coba Lagi"; btn.disabled = false;
-                }
-            } catch (err) { 
-                msg.style.color = "var(--danger-color)"; msg.innerText = "Koneksi Terputus."; 
-                btn.innerText = "Coba Lagi"; btn.disabled = false;
-            }
+                if (data.success) { msg.style.color = "var(--success-color)"; msg.innerText = "✅ Transmisi Berhasil!"; btn.innerText = "Terkirim"; setTimeout(() => location.reload(), 2000); } 
+                else { msg.style.color = "var(--danger-color)"; msg.innerText = "Error: " + data.error; btn.innerText = "Coba Lagi"; btn.disabled = false; }
+            } catch (err) { msg.style.color = "var(--danger-color)"; msg.innerText = "Koneksi Terputus."; btn.innerText = "Coba Lagi"; btn.disabled = false; }
         }
+
+        // 6. AGREEMENT MODAL
+        function showAgreementModal() {
+            document.getElementById('agreement-modal').style.display = 'flex'; document.body.style.overflow = 'hidden';
+            const box = document.getElementById('agreement-scroll');
+            box.addEventListener('scroll', function () {
+                if (box.scrollTop + box.clientHeight >= box.scrollHeight - 10) { const btn = document.getElementById('btn-agree'); btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+            });
+        }
+        function acceptAgreement() {
+            if (!document.getElementById('chk-agree').checked) { alert('Anda harus mencentang persetujuan terlebih dahulu.'); return; }
+            sessionStorage.setItem('spil_agreement_accepted', '1'); document.getElementById('agreement-modal').style.display = 'none'; document.body.style.overflow = '';
+        }
+
+        window.onload = () => {
+            if (!sessionStorage.getItem('spil_agreement_accepted')) { showAgreementModal(); }
+            loadWarehouses(); loadOrdersDropdown(); initDynamicGrid();
+        };
     </script>
-<!-- ================================================
-     WARNING & INTEGRITY AGREEMENT MODAL
-     ================================================ -->
-<style>
-#agreement-modal {
-    display: none;
-    position: fixed; inset: 0; z-index: 9999;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(6px);
-    align-items: center; justify-content: center;
-    padding: 16px;
-}
-.agr-box {
-    background: #fff;
-    border-radius: 16px;
-    width: 100%; max-width: 520px;
-    max-height: 90vh;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
-    animation: agr-in 0.35s cubic-bezier(.22,.68,0,1.2);
-}
-@keyframes agr-in {
-    from { transform: scale(0.88) translateY(20px); opacity: 0; }
-    to   { transform: scale(1) translateY(0);       opacity: 1; }
-}
-.agr-header {
-    background: linear-gradient(135deg, #0a365c 0%, #1e5b94 100%);
-    padding: 24px 24px 20px;
-    text-align: center; flex-shrink: 0;
-}
-.agr-header .agr-icon {
-    width: 60px; height: 60px; border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px; margin: 0 auto 12px;
-    border: 2px solid rgba(255,255,255,0.25);
-}
-.agr-header h2 {
-    color: #fff; font-size: 17px; font-weight: 800;
-    margin: 0 0 4px; letter-spacing: 0.3px;
-}
-.agr-header p {
-    color: rgba(255,255,255,0.75); font-size: 12px; margin: 0;
-}
-.agr-scroll {
-    flex: 1; overflow-y: auto; padding: 20px 24px;
-    font-size: 13px; line-height: 1.7; color: #374151;
-}
-.agr-scroll::-webkit-scrollbar { width: 4px; }
-.agr-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 
-.agr-warning-box {
-    background: #fff7ed; border: 1px solid #fed7aa;
-    border-left: 4px solid #f59e0b;
-    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
-    display: flex; gap: 10px; align-items: flex-start;
-}
-.agr-warning-box .wi { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
-.agr-warning-box strong { color: #92400e; font-size: 13px; display: block; margin-bottom: 4px; }
-.agr-warning-box p { color: #78350f; font-size: 12px; margin: 0; line-height: 1.6; }
+    <div id="agreement-modal">
+        <div class="agr-box">
+            <div class="agr-header">
+                <div class="agr-icon">⚠️</div>
+                <h2>Pernyataan Integritas & Peringatan Sistem</h2>
+                <p>PT Salam Pacific Indonesia Lines (SPIL) — e-POD Field System</p>
+            </div>
 
-.agr-danger-box {
-    background: #fef2f2; border: 1px solid #fecaca;
-    border-left: 4px solid #ef4444;
-    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
-    display: flex; gap: 10px; align-items: flex-start;
-}
-.agr-danger-box .wi { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
-.agr-danger-box strong { color: #991b1b; font-size: 13px; display: block; margin-bottom: 4px; }
-.agr-danger-box p { color: #7f1d1d; font-size: 12px; margin: 0; line-height: 1.6; }
+            <div class="agr-scroll" id="agreement-scroll">
+                
+                <div class="agr-warning-box">
+                    <span class="wi">🔒</span>
+                    <div>
+                        <strong>Sistem Pengawasan Aktif</strong>
+                        <p>Seluruh aktivitas Anda dalam sistem ini direkam secara digital termasuk lokasi GPS, waktu akses, foto yang diambil, dan data yang diinput. Semua data bersifat permanen dan tidak dapat diubah setelah disubmit.</p>
+                    </div>
+                </div>
 
-.agr-rules {
-    background: #f0f9ff; border: 1px solid #bae6fd;
-    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
-}
-.agr-rules .rule-title {
-    font-size: 12px; font-weight: 800; color: #0369a1;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
-}
-.agr-rules ul {
-    margin: 0; padding-left: 18px;
-    color: #0c4a6e; font-size: 12px; line-height: 1.9;
-}
-.agr-rules ul li { margin-bottom: 2px; }
+                <div class="agr-danger-box">
+                    <span class="wi">🚨</span>
+                    <div>
+                        <strong>Larangan Keras — Zero Tolerance</strong>
+                        <p>Manipulasi data kargo, pemalsuan jumlah barang, penggunaan foto lama, atau tindakan kecurangan apapun dalam sistem ini merupakan pelanggaran serius yang dapat berujung pada tindakan hukum dan pemutusan hubungan kerja.</p>
+                    </div>
+                </div>
 
-.agr-sanctions {
-    background: #fdf4ff; border: 1px solid #e9d5ff;
-    border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;
-}
-.agr-sanctions .rule-title {
-    font-size: 12px; font-weight: 800; color: #7e22ce;
-    text-transform: uppercase; letter-spacing: 0.5px;
-    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
-}
-.agr-sanctions ul {
-    margin: 0; padding-left: 18px;
-    color: #581c87; font-size: 12px; line-height: 1.9;
-}
+                <div class="agr-rules">
+                    <div class="rule-title">📋 Kewajiban Petugas Lapangan</div>
+                    <ul>
+                        <li>Foto kargo <strong>wajib diambil langsung</strong> dari kamera perangkat, tidak boleh dari galeri</li>
+                        <li>Setiap foto otomatis menyematkan <strong>watermark GPS, waktu, dan identitas</strong> yang tidak dapat dihapus</li>
+                        <li>Form pemuatan/bongkar <strong>hanya dapat disubmit</strong> saat berada dalam radius area gudang (Geofence)</li>
+                        <li>Jumlah barang yang diinput harus <strong>sesuai dengan kondisi aktual</strong> di lapangan</li>
+                        <li>Setiap selisih barang <strong>wajib dilaporkan</strong> dengan catatan yang jelas dan jujur</li>
+                        <li>Dilarang memberikan akun atau akses sistem kepada pihak lain</li>
+                    </ul>
+                </div>
 
-.agr-scroll-hint {
-    text-align: center; font-size: 11px; color: #9ca3af;
-    margin-top: 8px; padding: 8px;
-    animation: bounce 1.5s infinite;
-}
-@keyframes bounce {
-    0%,100% { transform: translateY(0); }
-    50%      { transform: translateY(4px); }
-}
+                <div class="agr-sanctions">
+                    <div class="rule-title">⚖️ Konsekuensi Pelanggaran</div>
+                    <ul>
+                        <li>Peringatan tertulis untuk pelanggaran pertama</li>
+                        <li>Pemutusan hubungan kerja / kontrak vendor untuk pelanggaran berulang</li>
+                        <li>Tuntutan ganti rugi atas kerugian finansial yang diakibatkan</li>
+                        <li>Pelaporan ke pihak berwenang untuk kasus manipulasi data yang terbukti</li>
+                        <li>Pemblokiran akses permanen dari seluruh sistem SPIL</li>
+                    </ul>
+                </div>
 
-.agr-footer {
-    padding: 16px 24px 20px; border-top: 1px solid #e5e7eb;
-    flex-shrink: 0; background: #f9fafb;
-}
-.agr-checkbox-row {
-    display: flex; align-items: flex-start; gap: 10px;
-    margin-bottom: 14px;
-    background: #fff; border: 1px solid #d1d5db;
-    border-radius: 8px; padding: 12px 14px;
-    cursor: pointer;
-}
-.agr-checkbox-row input[type=checkbox] {
-    width: 18px; height: 18px; flex-shrink: 0;
-    accent-color: #0a365c; margin-top: 1px; cursor: pointer;
-    border: none; background: none; box-shadow: none;
-    border-radius: 0; padding: 0;
-}
-.agr-checkbox-row label {
-    font-size: 12px; color: #374151; line-height: 1.6;
-    cursor: pointer; font-weight: 500; margin: 0;
-}
-.agr-checkbox-row label strong { color: #0a365c; }
+                <p style="font-size:12px; color:#6b7280; text-align:center; margin-top:8px;">
+                    Dengan melanjutkan, Anda menyatakan telah membaca, memahami, dan bersedia tunduk pada seluruh ketentuan di atas sesuai dengan kebijakan integritas PT SPIL.
+                </p>
 
-#btn-agree {
-    width: 100%; padding: 13px;
-    background: linear-gradient(135deg, #0a365c, #1e5b94);
-    color: #fff; border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 700; cursor: not-allowed;
-    opacity: 0.45; transition: all 0.2s;
-    letter-spacing: 0.3px;
-}
-#btn-agree:not(:disabled):hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(10,54,92,0.35);
-}
-.agr-note {
-    text-align: center; font-size: 11px; color: #9ca3af;
-    margin-top: 10px; line-height: 1.5;
-}
-</style>
+                <div class="agr-scroll-hint">↓ Scroll ke bawah untuk melanjutkan ↓</div>
+            </div>
 
-<div id="agreement-modal">
-  <div class="agr-box">
-
-    <!-- HEADER -->
-    <div class="agr-header">
-      <div class="agr-icon">⚠️</div>
-      <h2>Pernyataan Integritas & Peringatan Sistem</h2>
-      <p>PT Salam Pacific Indonesia Lines (SPIL) — e-POD Field System</p>
-    </div>
-
-    <!-- SCROLL CONTENT -->
-    <div class="agr-scroll" id="agreement-scroll">
-
-      <div class="agr-warning-box">
-        <span class="wi">🔒</span>
-        <div>
-          <strong>Sistem Pengawasan Aktif</strong>
-          <p>Seluruh aktivitas Anda dalam sistem ini direkam secara digital termasuk lokasi GPS, waktu akses, foto yang diambil, dan data yang diinput. Semua data bersifat permanen dan tidak dapat diubah setelah disubmit.</p>
+            <div class="agr-footer">
+                <div class="agr-checkbox-row" onclick="document.getElementById('chk-agree').click()">
+                    <input type="checkbox" id="chk-agree">
+                    <label for="chk-agree">
+                        Saya, <strong>{{ user.name }}</strong>, menyatakan telah membaca dan memahami seluruh pernyataan di atas. Saya berkomitmen untuk menggunakan sistem ini dengan <strong>jujur, akurat, dan bertanggung jawab</strong>.
+                    </label>
+                </div>
+                <button id="btn-agree" disabled onclick="acceptAgreement()">
+                    Saya Setuju &amp; Lanjutkan
+                </button>
+                <div class="agr-note">
+                    Dokumen persetujuan ini tercatat otomatis dengan timestamp dan identitas akun Anda.
+                </div>
+            </div>
         </div>
-      </div>
-
-      <div class="agr-danger-box">
-        <span class="wi">🚨</span>
-        <div>
-          <strong>Larangan Keras — Zero Tolerance</strong>
-          <p>Manipulasi data kargo, pemalsuan jumlah barang, penggunaan foto lama, atau tindakan kecurangan apapun dalam sistem ini merupakan pelanggaran serius yang dapat berujung pada tindakan hukum dan pemutusan hubungan kerja.</p>
-        </div>
-      </div>
-
-      <div class="agr-rules">
-        <div class="rule-title">📋 Kewajiban Petugas Lapangan</div>
-        <ul>
-          <li>Foto kargo <strong>wajib diambil langsung</strong> dari kamera perangkat, tidak boleh dari galeri</li>
-          <li>Setiap foto otomatis menyematkan <strong>watermark GPS, waktu, dan identitas</strong> yang tidak dapat dihapus</li>
-          <li>Form pemuatan/bongkar <strong>hanya dapat disubmit</strong> saat berada dalam radius area gudang (Geofence)</li>
-          <li>Jumlah barang yang diinput harus <strong>sesuai dengan kondisi aktual</strong> di lapangan</li>
-          <li>Setiap selisih barang <strong>wajib dilaporkan</strong> dengan catatan yang jelas dan jujur</li>
-          <li>Dilarang memberikan akun atau akses sistem kepada pihak lain</li>
-        </ul>
-      </div>
-
-      <div class="agr-sanctions">
-        <div class="rule-title">⚖️ Konsekuensi Pelanggaran</div>
-        <ul>
-          <li>Peringatan tertulis untuk pelanggaran pertama</li>
-          <li>Pemutusan hubungan kerja / kontrak vendor untuk pelanggaran berulang</li>
-          <li>Tuntutan ganti rugi atas kerugian finansial yang diakibatkan</li>
-          <li>Pelaporan ke pihak berwenang untuk kasus manipulasi data yang terbukti</li>
-          <li>Pemblokiran akses permanen dari seluruh sistem SPIL</li>
-        </ul>
-      </div>
-
-      <p style="font-size:12px; color:#6b7280; text-align:center; margin-top:8px;">
-        Dengan melanjutkan, Anda menyatakan telah membaca, memahami, dan bersedia tunduk pada seluruh ketentuan di atas sesuai dengan kebijakan integritas PT SPIL.
-      </p>
-
-      <div class="agr-scroll-hint">↓ Scroll ke bawah untuk melanjutkan ↓</div>
     </div>
-
-    <!-- FOOTER -->
-    <div class="agr-footer">
-      <div class="agr-checkbox-row" onclick="document.getElementById('chk-agree').click()">
-        <input type="checkbox" id="chk-agree">
-        <label for="chk-agree">
-          Saya, <strong>{{ user.name }}</strong>, menyatakan telah membaca dan memahami seluruh pernyataan di atas. Saya berkomitmen untuk menggunakan sistem ini dengan <strong>jujur, akurat, dan bertanggung jawab</strong>.
-        </label>
-      </div>
-      <button id="btn-agree" disabled onclick="acceptAgreement()">
-        Saya Setuju &amp; Lanjutkan
-      </button>
-      <div class="agr-note">
-        Dokumen persetujuan ini tercatat otomatis dengan timestamp dan identitas akun Anda.
-      </div>
-    </div>
-
-  </div>
-</div>
 
 </body>
 </html>
